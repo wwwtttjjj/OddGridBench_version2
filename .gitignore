@@ -1,0 +1,28 @@
+# Python cache and compiled files
+*/__pycache__/
+*.pyc
+
+# Image output
+*.png
+*.zip
+# JSON metadata
+*.json
+*.tar.gz
+# macOS metadata
+*/.DS_Store
+*.DS_Store
+
+# Font files (local use only, avoid pushing large binaries)
+*.ttf
+*.otf
+*.ttc
+*.output
+*.jsonl
+*.json
+*ubyte
+*.otf
+*.JPG
+*.csv
+*.bmp
+*.txt
+
