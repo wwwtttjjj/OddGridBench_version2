@@ -62,6 +62,8 @@ def eval_json_file(json_path: Path):
         gt = sample.get("answer", [])
 
         em, f1 = compute_em_f1(pred, gt)
+        if em == 0:
+            print(sample.get("class", []))
         em_list.append(em)
         f1_list.append(f1)
         # print(f"[DEBUG] id={sample.get('id')} EM={em} F1={f1:.4f}")
@@ -80,7 +82,8 @@ def eval_json_dir(json_dir: str, out_csv: str):
     json_files = sorted(json_dir.glob("*.json"))
 
     if not json_files:
-        raise RuntimeError(f"No json files found in {json_dir}")
+        return
+        # raise RuntimeError(f"No json files found in {json_dir}")
 
     results = {}
 

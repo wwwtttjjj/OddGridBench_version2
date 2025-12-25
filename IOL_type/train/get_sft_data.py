@@ -44,10 +44,8 @@ def convert_dataset(
         # ✅ 构造 prompt
         prompt = build_prompt(item)
 
-        # ✅ 转换为绝对路径
-        image_abs = os.path.abspath(
-            os.path.join(image_root, os.path.basename(image))
-        )
+        image_abs = os.path.join(image_root, os.path.basename(image))
+        
 
         processed.append({
             "conversations": [
@@ -76,8 +74,8 @@ if __name__ == "__main__":
     train_json_path = "../create_data/train_data.json"
     test_json_path  = "../create_data/test_data.json"
 
-    train_image_dir = "/data/wengtengjin/colorsense/create_data/train_data/image"
-    test_image_dir  = "/data/wengtengjin/colorsense/create_data/test_data/image"
+    train_image_dir = "../../IOL_type/create_data/train_data/image"
+    test_image_dir  = "../../IOL_type/create_data/test_data/image"
 
     train_out = "./train_sft_qa.json"
     test_out  = "./test_sft_qa.json"

@@ -25,4 +25,6 @@
 *.csv
 *.bmp
 *.txt
-
+*.safetensors
+*.bin
+*.mp4

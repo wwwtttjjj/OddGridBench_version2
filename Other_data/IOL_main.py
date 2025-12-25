@@ -11,20 +11,20 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 # ======================
 # 参数范围
 # ======================
-MIN_GRID = 5
-MAX_GRID = 9
+MIN_GRID = 6
+MAX_GRID = 10
 
-MIN_CELL_SIZE = 60
-MAX_CELL_SIZE = 80
+MIN_CELL_SIZE = 40
+MAX_CELL_SIZE = 50
 
 MIN_GAP = 10
-MAX_GAP = 50
+MAX_GAP = 30
 
 MIN_ODD = 1
 MAX_ODD = 5
 
-MIN_MARGIN = 30
-MAX_MARGIN = 50
+MIN_MARGIN = 20
+MAX_MARGIN = 35
 
 BG_COLOR = (255, 255, 255)
 
@@ -41,12 +41,11 @@ def add_gaussian_noise_pil(pil_img, sigma=0.02):
 
 def load_digit_pool(png_root: Path):
     pool = {}
-    for d in range(10):
-        ddir = png_root / str(d)
+    for ddir in sorted(p for p in png_root.iterdir() if p.is_dir()):
         imgs = sorted(ddir.glob("*.png"))
         if not imgs:
             raise RuntimeError(f"No png in {ddir}")
-        pool[d] = imgs
+        pool[ddir.name] = imgs
     return pool
 
 
@@ -128,6 +127,7 @@ def generate_single_iol(digit_pool: dict):
         "base_image": base_path.name,
         "odd_images": [p.name for p in odd_paths],
     }
+    # print(digit)
 
     return canvas, meta
 

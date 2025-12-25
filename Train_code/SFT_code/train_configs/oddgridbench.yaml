@@ -1,0 +1,51 @@
+### model
+model_name_or_path: ../../../models/Qwen3-VL-2B-Instruct
+image_max_pixels: 1000000
+video_max_pixels: 16384
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: full
+freeze_vision_tower: false
+freeze_multi_modal_projector: false
+freeze_language_model: false
+deepspeed: examples/deepspeed/ds_z2_config.json
+
+
+### dataset
+dataset: icon_IOL
+template: qwen3_vl_nothink
+cutoff_len: 2048
+overwrite_cache: true 
+preprocessing_num_workers: 16
+dataloader_num_workers: 16
+
+### output
+output_dir: output/oddgrid_sft_qwen3_vl_4b
+logging_steps: 10
+plot_loss: true
+overwrite_output_dir: true
+save_strategy: steps        # 或者 "epoch"
+save_steps: 500             # 每 500 步保存一次（可改）
+save_total_limit: 2         # 只保留最近 3 次 checkpoint
+save_only_model: false      # 必须设为 false，才能保存 optimizer & scheduler 状态
+report_to: none
+
+### train
+per_device_train_batch_size: 8
+gradient_accumulation_steps: 2
+learning_rate: 5e-6
+num_train_epochs: 1.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.05
+max_grad_norm: 1.0
+bf16: false
+fp16: true
+ddp_timeout: 180000000
+resume_from_checkpoint: null
+optim: adamw_torch_fused
+gradient_checkpointing: true     # ✅ 节省显存
+
+# max_samples: 2000   # 只用前 N 个样本进行训练，方便调试。设为一个很大值以使用全部数据

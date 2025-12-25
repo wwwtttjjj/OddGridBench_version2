@@ -14,8 +14,6 @@ from PIL import Image, ImageDraw, ImageFont
 FONT_DIR = Path("../SimplifiedChinese")
 
 
-
-
 # 预加载字体缓存（按 font_size）
 FONT_CACHE: Dict[int, ImageFont.FreeTypeFont] = {}
 
@@ -97,6 +95,7 @@ def render_hanzi_png(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(out_path, format="PNG")
 
+import shutil
 
 # ===============================
 # Main pipeline（回到你原始版本）
@@ -108,7 +107,14 @@ def generate_from_pairs_json(
     size: int = 60,
 ):
     json_path = Path(json_path)
+
     output_root = Path(output_root)
+
+    # 如果已存在，先删除整个目录
+    if output_root.exists():
+        shutil.rmtree(output_root)
+
+    # 重新创建
     output_root.mkdir(parents=True, exist_ok=True)
 
     if not json_path.exists():

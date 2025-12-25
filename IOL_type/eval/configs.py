@@ -1,17 +1,21 @@
 import os
-models_dir = "/data/wengtengjin/models/"
+# models_dir = "../models/"
 max_new_tokens = 2048
+
+CUR_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(CUR_DIR, "../../../"))
+models_dir = os.path.join(ROOT_DIR, "models")
 
 def get_configs(args):
     if args.data_type == "icon":
         image_dir = "../create_data/test_data/image"
         json_path = "../create_data/test_data.json"
     elif args.data_type == "hanzi":
-        image_dir = "/data/wengtengjin/OddGridBench_version2/Other_data/hanzi/iol_test_data/images"
-        json_path = "/data/wengtengjin/OddGridBench_version2/Other_data/hanzi/iol_test_data/iol_test_data.json"
+        image_dir = "../../Other_data/hanzi/iol_test_data/images"
+        json_path = "../../Other_data/hanzi/iol_test_data/iol_test_data.json"
     elif args.data_type == "mnist":
-        image_dir = "/data/wengtengjin/OddGridBench_version2/Other_data/mnist/iol_test_data/images"
-        json_path = "/data/wengtengjin/OddGridBench_version2/Other_data/mnist/iol_test_data/iol_test_data.json"
+        image_dir = "../../Other_data/mnist/iol_test_data/images"
+        json_path = "../../Other_data/mnist/iol_test_data/iol_test_data.json"
 
     # 输出路径
     Result_root = args.data_type + "_output/"
