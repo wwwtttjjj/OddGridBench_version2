@@ -100,6 +100,8 @@ def run_vllm_http(args):
             
         save_item = {
             "id": id,
+            "image":data.get("image"),
+            "class": data.get("class", ""),
             "prompt": prompt,
             "predict_answer": predict_answer,
             "extract_answer": extract_answer,
@@ -114,7 +116,7 @@ def run_vllm_http(args):
 
 def main():
     parser = argparse.ArgumentParser(description="Run multimodal inference via vLLM HTTP API")
-    parser.add_argument("--model_name", type=str, default="Qwen3-VL-32B-Instruct")  # Qwen3-VL-2B-Instruct / Qwen3-VL-6B-Instruct
+    parser.add_argument("--model_name", type=str, default="oddgrid_sft_qwen3_vl_4b")  # Qwen3-VL-2B-Instruct / Qwen3-VL-6B-Instruct
     parser.add_argument(
         "--image_type",
         type=str,
@@ -124,7 +126,7 @@ def main():
     parser.add_argument(
         "--data_type",
         type=str,
-        default="icon",
+        default="mnist",
         help="icon, mnist, hanzi"
     )
     

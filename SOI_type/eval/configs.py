@@ -1,25 +1,34 @@
 import os
-models_dir = "/data/wengtengjin/models/"
+# models_dir = "../models/"
 max_new_tokens = 2048
 
-def get_configs(args):
-    # 目录定义
+CUR_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(CUR_DIR, "../../../"))
+models_dir = os.path.join(ROOT_DIR, "models")
 
-    image_dir = "../create_data/test_data/image"
-    json_path = "../create_data/test_data.json"
-    # root_dir = image_dir
+def get_configs(args):
+    if args.data_type == "icon":
+        image_dir = "../create_data/test_data/image"
+        json_path = "../create_data/test_data.json"
+    elif args.data_type == "hanzi":
+        image_dir = "../../Other_data/hanzi/soi_test_data/images"
+        json_path = "../../Other_data/hanzi/soi_test_data/soi_test_data.json"
+    elif args.data_type == "mnist":
+        image_dir = "../../Other_data/mnist/soi_test_data/images"
+        json_path = "../../Other_data/mnist/soi_test_data/soi_test_data.json"
 
     # 输出路径
-    Result_root = "output/"
+    Result_root = args.data_type + "_output/"
 
-    if args.data_type == "with_number":
+    if args.image_type == "with_number":
         image_dir = image_dir.replace("image", "image_number")
         Result_root = "output_number/"
         
     if not os.path.exists(Result_root):
         os.mkdir(Result_root)
     return {
-        "image_type": "oddgridbench",
+        "image_type": args.image_type,
+        "data_type": args.data_type,
         "image_dir": image_dir,
         "json_path": json_path,
         # "root_dir": root_dir,

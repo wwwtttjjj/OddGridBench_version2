@@ -320,7 +320,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # 注册SVG文件
-    register_all_svg(f"../../create_data/svg_file_{args.data_type[:-5]}")
+    register_all_svg(f"../../IOL_type/create_data/svg_file_{args.data_type[:-5]}")
     
     # 构建数据集
     build_dataset(args)

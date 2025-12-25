@@ -14,7 +14,7 @@ from skimage.metrics import structural_similarity as ssim
 # =========================
 
 MNIST_ROOT = Path("../mnist_png")
-OUTPUT_ROOT = Path("./output_pairs")
+OUTPUT_ROOT = Path("./mnist_pairs")
 
 TOTAL_PAIRS = 100
 

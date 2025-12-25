@@ -27,13 +27,17 @@ def main(arsg):
         # answer 转成文本（例如 'row 2, col 5'）
         # answer_text = f"Row {data['odd_position']['row']}, Column {data['odd_position']['col']}"
         
-        odd_rows_cols = []
+        # odd_rows_cols = []
 
-        odd_list = data.get("odd_list", [])
+        # odd_list = data.get("odd_list", [])
+        # for odd in odd_list:
+        #     row = odd.get("row")
+        #     col = odd.get("col")
+        #     odd_rows_cols.append((row, col))
+        odd_indices = []
+        odd_list = data.get("odd_icons", [])
         for odd in odd_list:
-            row = odd.get("row")
-            col = odd.get("col")
-            odd_rows_cols.append((row, col))
+            odd_indices.append(int(odd.get("icon_name").split('.')[0]))
             
         # 构造目标格式
         merged_data.append({
@@ -43,6 +47,7 @@ def main(arsg):
             "odd_icons": data.get("odd_icons", []),
             "num_odds": data.get("num_odds", None),
             "block_size": data.get("block_size", None),
+            "odd_indices":odd_indices
             # "odd_rows_cols": odd_rows_cols,
         })
 

@@ -13,14 +13,14 @@ import argparse
 # 参数范围
 # ======================
 
-MIN_SET_SIZE = 10
-MAX_SET_SIZE = 20
+MIN_SET_SIZE = 8
+MAX_SET_SIZE = 15
 
-MIN_CELL_SIZE = 60
-MAX_CELL_SIZE = 80
+MIN_CELL_SIZE = 224
+MAX_CELL_SIZE = 224
 
 MIN_ODD = 1
-MAX_ODD = 5
+MAX_ODD = 3
 
 BG_COLOR = (255, 255, 255)
 
@@ -47,20 +47,12 @@ def add_gaussian_noise_pil(pil_img, sigma=0.02):
 # ======================
 
 def load_digit_pool(png_root: Path):
-    """
-    png_root/
-      0/*.png
-      1/*.png
-      ...
-      9/*.png
-    """
     pool = {}
-    for d in range(10):
-        ddir = png_root / str(d)
+    for ddir in sorted(p for p in png_root.iterdir() if p.is_dir()):
         imgs = sorted(ddir.glob("*.png"))
         if not imgs:
-            raise RuntimeError(f"No png files in {ddir}")
-        pool[d] = imgs
+            raise RuntimeError(f"No png in {ddir}")
+        pool[ddir.name] = imgs
     return pool
 
 
@@ -161,7 +153,7 @@ def generate_soi_dataset(
         for idx, img in enumerate(imgs):
             img.save(img_dir / f"{idx + 1}.png")
 
-        meta["image"] = f"images{i}"
+        meta["image"] = f"image_{i}"
 
         with (sample_dir / "annotation.json").open("w", encoding="utf-8") as f:
             json.dump(meta, f, ensure_ascii=False, indent=2)

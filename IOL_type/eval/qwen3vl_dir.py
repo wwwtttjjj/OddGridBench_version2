@@ -3,6 +3,7 @@ import argparse
 import json
 import base64
 from tqdm import tqdm
+import torch
 
 from configs import get_configs, max_new_tokens
 from utils import *
@@ -18,11 +19,12 @@ _VLLM_MODEL = None
 
 def get_vllm_model(model_path):
     global _VLLM_MODEL
+    tp = torch.cuda.device_count()
     if _VLLM_MODEL is None:
         _VLLM_MODEL = LLM(
             model=model_path,
             trust_remote_code=True,
-            tensor_parallel_size=int(os.environ.get("TP_SIZE", 1)),
+            tensor_parallel_size=tp,
         )
     return _VLLM_MODEL
 

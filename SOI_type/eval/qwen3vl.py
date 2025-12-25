@@ -7,6 +7,10 @@ from tqdm import tqdm
 
 from configs import get_configs, max_new_tokens
 from utils import *
+from PIL import Image
+from io import BytesIO
+
+TARGET_SIZE = 112  # 你想要的正方形边长
 
 # 可以按需改成环境变量
 API_URL = "http://localhost:8081/v1/chat/completions"
@@ -15,10 +19,17 @@ def call_vllm_server(prompt, image_paths, model_path):
     """通过 vLLM REST API 调用模型"""
     messages = [{"role": "user", "content": []}]
     print(image_paths)
-    # 图像转 base64
+
     for img_path in image_paths:
-        with open(img_path, "rb") as f:
-            b64 = base64.b64encode(f.read()).decode("utf-8")
+        img = Image.open(img_path).convert("RGB")
+
+        # 选插值：自然图像用 BICUBIC；像 MNIST/字形这种硬边界可用 NEAREST
+        img = img.resize((TARGET_SIZE, TARGET_SIZE), resample=Image.BICUBIC)
+
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+        b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+
         messages[0]["content"].append({
             "type": "image_url",
             "image_url": {"url": f"data:image/png;base64,{b64}"}
@@ -91,11 +102,11 @@ def run_vllm_http(args):
 
         predict_answer = call_vllm_server(prompt, image_paths, model_path)
         extract_answer = extract_answer_from_response(predict_answer)
-        odd_lists = []
+        # odd_lists = []
 
-        odd_list = data.get("odd_icons", [])
-        for odd in odd_list:
-            odd_lists.append(odd.get("icon_name"))
+        # odd_list = data.get("odd_icons", [])
+        # for odd in odd_list:
+        #     odd_lists.append(odd.get("icon_name"))
 
         save_item = {
             "id": id,
@@ -104,8 +115,7 @@ def run_vllm_http(args):
             "prompt": prompt,
             "predict_answer": predict_answer,
             "extract_answer": extract_answer,
-            "answer": odd_lists,
-            "odd_list": odd_list,
+            "answer": data.get("odd_indices", []),
             "odd_count": data.get("num_odds"),
         }
         write_json(save_json_path, save_item)
@@ -114,17 +124,22 @@ def run_vllm_http(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run multimodal inference via vLLM HTTP API")
-    parser.add_argument("--model_name", type=str, default="Qwen3-VL-8B-Instruct")  # Qwen3-VL-2B-Instruct / Qwen3-VL-6B-Instruct
+    parser = argparse.ArgumentParser(description="Run multimodal inference via vLLM Python API")
+    parser.add_argument("--model_name", type=str, default="oddgrid_sft_qwen3_vl_4b")
     parser.add_argument(
-        "--data_type",
+        "--image_type",
         type=str,
         default="normal",
         help="normal or with_number"
     )
-    
-    args = parser.parse_args()
+    parser.add_argument(
+        "--data_type",
+        type=str,
+        default="mnist",
+        help="icon, mnist, hanzi"
+    )
 
+    args = parser.parse_args()
     run_vllm_http(args)
 
 
