@@ -14,10 +14,11 @@ from skimage.metrics import structural_similarity as ssim
 # =========================
 
 MNIST_ROOT = Path("../mnist_png")
-OUTPUT_ROOT = Path("./mnist_pairs")
+OUTPUT_ROOT = Path("../mnist_pairs")
 
 TOTAL_PAIRS = 100
 
+MAX_SSIM = 0.95
 INIT_MIN_SSIM = 0.80
 MIN_SSIM_FLOOR = 0.70
 SSIM_DECAY = 0.02
@@ -100,11 +101,11 @@ def main():
                 p1, p2 = random.sample(img_paths, 2)
                 score = compute_ssim(load_image(p1), load_image(p2))
 
-                if score >= cur_min_ssim:
+                if score >= cur_min_ssim and score <= MAX_SSIM:
                     img_paths.remove(p1)
                     img_paths.remove(p2)
 
-                    pair_id = f"{digit}_{uuid.uuid4().hex[:6]}"
+                    pair_id = f"{digit}_{score:.2ccd ../f}_{uuid.uuid4().hex[:6]}"
                     out_dir = OUTPUT_ROOT / pair_id
                     out_dir.mkdir(parents=True)
 

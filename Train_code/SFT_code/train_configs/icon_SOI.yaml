@@ -15,7 +15,7 @@ deepspeed: examples/deepspeed/ds_z2_config.json
 
 
 ### dataset
-dataset: icon_IOL
+dataset: icon_SOI
 template: qwen3_vl_nothink
 cutoff_len: 2048
 overwrite_cache: true 
@@ -23,7 +23,7 @@ preprocessing_num_workers: 16
 dataloader_num_workers: 16
 
 ### output
-output_dir: output/oddgrid_sft_qwen3_vl_4b
+output_dir: output/icon_SOI_sft_qwen3_vl_2b
 logging_steps: 10
 plot_loss: true
 overwrite_output_dir: true

@@ -314,7 +314,7 @@ if __name__ == "__main__":
     
     # 其他参数
     parser.add_argument("--num_workers", type=int, default=16, help="并行进程数")
-    parser.add_argument("--max_num_odds", type=int, default=5, help="每组中最大odd图标数量")
+    parser.add_argument("--max_num_odds", type=int, default=4, help="每组中最大odd图标数量")
     parser.add_argument("--max_attributes", type=int, default=1, help="每个odd图标的最大属性数")
 
     args = parser.parse_args()

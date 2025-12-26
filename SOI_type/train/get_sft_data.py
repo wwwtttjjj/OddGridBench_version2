@@ -33,34 +33,35 @@ def convert_dataset(
     for item in samples:
         answer = item.get("answer", "")
         image = item.get("image", "")
-        odd_rows_cols = item.get("odd_rows_cols", [])
+        odd_indices = item.get("odd_indices", [])
 
         # ✅ 打乱顺序
-        random.shuffle(odd_rows_cols)
+        # random.shuffle(odd_rows_cols)
 
         # ✅ 生成最终 boxed 答案
-        answer = ",".join([f"({r},{c})" for r, c in odd_rows_cols])
+        answer = ",".join([f"image{r}" for r in odd_indices])
 
-        # ✅ 构造 prompt
-        prompt = build_prompt(item)
+
 
         # ✅ 转换为绝对路径
-        image_abs = os.path.abspath(
-            os.path.join(image_root, os.path.basename(image))
-        )
-
+        image_abs = os.path.join(image_root, os.path.basename(image))
+        image_set = [os.path.join(image_abs, f"{i}.png") for i in range(1, item.get("total_icons") + 1)]
+        num_images = len(image_set)
+        image_tokens = "\n".join([f"<image> image{i}" for i in range(1, num_images + 1)])
+        # ✅ 构造 prompt
+        prompt = build_prompt(image_set)
         processed.append({
             "conversations": [
                 {
                     "from": "human",
-                    "value": f"<image>\n{prompt}"
+                    "value": f"{image_tokens}\n\n{prompt}"
                 },
                 {
                     "from": "gpt",
                     "value": f"\\boxed{{{answer}}}"
                 }
             ],
-            "image": image_abs
+            "image": image_set
         })
 
         if max_num is not None and len(processed) >= max_num:
@@ -76,8 +77,8 @@ if __name__ == "__main__":
     train_json_path = "../create_data/train_data.json"
     test_json_path  = "../create_data/test_data.json"
 
-    train_image_dir = "/data/wengtengjin/colorsense/create_data/train_data/image"
-    test_image_dir  = "/data/wengtengjin/colorsense/create_data/test_data/image"
+    train_image_dir = "../../SOI_type/create_data/train_data/image"
+    test_image_dir  = "../../SOI_type/create_data/test_data/image"
 
     train_out = "./train_sft_qa.json"
     test_out  = "./test_sft_qa.json"

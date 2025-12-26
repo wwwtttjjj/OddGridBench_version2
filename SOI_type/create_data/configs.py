@@ -1,8 +1,8 @@
 import random
 import math
 configs = {
-    "icons_per_group" : [10, 20],
-    "block_size":[100, 200],
+    "icons_per_group" : [12, 20],
+    "block_size":[112, 112],
     "base_angle":[0,360],
     "rotation_banned": ["symbolic(&)circle,natural(&)snowflake"]
 }

@@ -13,14 +13,14 @@ import argparse
 # 参数范围
 # ======================
 
-MIN_SET_SIZE = 8
-MAX_SET_SIZE = 15
+MIN_SET_SIZE = 12
+MAX_SET_SIZE = 20
 
-MIN_CELL_SIZE = 224
-MAX_CELL_SIZE = 224
+MIN_CELL_SIZE = 112
+MAX_CELL_SIZE = 112
 
 MIN_ODD = 1
-MAX_ODD = 3
+MAX_ODD = 4
 
 BG_COLOR = (255, 255, 255)
 

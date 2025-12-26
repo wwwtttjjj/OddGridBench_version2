@@ -7,7 +7,7 @@ source /nfsdata4/wengtengjin/oddgrid_task/env/llamafactory/bin/activate
 # 指定GPU
 export CUDA_VISIBLE_DEVICES=0,5
 
-llamafactory-cli train train_configs/oddgridbench.yaml
+llamafactory-cli train train_configs/icon_SOI.yaml
 
 
 

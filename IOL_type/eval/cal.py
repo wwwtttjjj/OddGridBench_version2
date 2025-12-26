@@ -62,8 +62,8 @@ def eval_json_file(json_path: Path):
         gt = sample.get("answer", [])
 
         em, f1 = compute_em_f1(pred, gt)
-        if em == 0:
-            print(sample.get("class", []))
+        # if em == 0:
+        #     print(sample.get("class", []))
         em_list.append(em)
         f1_list.append(f1)
         # print(f"[DEBUG] id={sample.get('id')} EM={em} F1={f1:.4f}")
@@ -109,8 +109,8 @@ def eval_json_dir(json_dir: str, out_csv: str):
         for model_name, metric_dict in results.items():
             row = [
                 model_name,
-                f"{metric_dict['EM']:.6f}",
-                f"{metric_dict['F1']:.6f}",
+                f"{metric_dict['EM'] * 100:.1f}",
+                f"{metric_dict['F1'] * 100:.1f}",
             ]
             writer.writerow(row)
 

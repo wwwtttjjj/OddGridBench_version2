@@ -1,8 +1,7 @@
 #!/bin/bash
 set -e  # 出错就停止执行
-source ~/miniconda3/etc/profile.d/conda.sh
-conda activate base
-train_num=30000
+# source /nfsdata4/wengtengjin/oddgrid_task/env/easyr1/bin/activate
+train_num=3000
 
 # 要运行的命令列表
 commands=(

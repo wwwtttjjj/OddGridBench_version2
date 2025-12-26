@@ -7,7 +7,6 @@ import torch
 
 from configs import get_configs, max_new_tokens
 from utils import *
-from qwen3vl import run_vllm_http
 
 # ===== 新增：vLLM =====
 from vllm import LLM, SamplingParams
@@ -70,71 +69,68 @@ def call_vllm_server(prompt, image_paths, model_path):
         print(f"[ERROR] vLLM inference failed: {e}")
         return None
 
+def run_vllm_http(args):
+    """读取 JSON -> 调 HTTP -> 写结果（串行，服务端负责并发与多卡）"""
+    configs_para = get_configs(args)
+    # Result_root = configs_para["Result_root"]
 
-# def run_vllm_http(args):
-#     """读取 JSON -> 调 HTTP -> 写结果（串行，服务端负责并发与多卡）"""
-#     configs_para = get_configs(args)
-#     # Result_root = configs_para["Result_root"]
+    json_path = configs_para["json_path"]
+    model_path = configs_para["model_path"]
+    save_json_path = configs_para["save_path"]
+    if os.path.exists(save_json_path):
+        os.remove(save_json_path)
 
-#     json_path = configs_para["json_path"]
-#     model_path = configs_para["model_path"]
-#     save_json_path = configs_para["save_path"]
-#     if os.path.exists(save_json_path):
-#         os.remove(save_json_path)
+    if not json_path or not model_path:
+        raise ValueError(f"Unknown model_name: {args.model_name}")
+    # print(configs_para)
+    # 已有结果 -> 去重
+    processed_ids = set()
+    if os.path.exists(save_json_path):
+        with open(save_json_path, "r", encoding="utf-8") as f:
+            for item in json.load(f):
+                if "id" in item:
+                    processed_ids.add(item["id"])
 
-#     if not json_path or not model_path:
-#         raise ValueError(f"Unknown model_name: {args.model_name}")
-#     # print(configs_para)
-#     # 已有结果 -> 去重
-#     processed_ids = set()
-#     if os.path.exists(save_json_path):
-#         with open(save_json_path, "r", encoding="utf-8") as f:
-#             for item in json.load(f):
-#                 if "id" in item:
-#                     processed_ids.add(item["id"])
+    # 读测试集
+    with open(json_path, 'r', encoding='utf-8') as f:
+        json_data = json.load(f)
 
-#     # 读测试集
-#     with open(json_path, 'r', encoding='utf-8') as f:
-#         json_data = json.load(f)
+    print(f"[INFO] Total samples: {len(json_data)}; processed: {len(processed_ids)}")
 
-#     print(f"[INFO] Total samples: {len(json_data)}; processed: {len(processed_ids)}")
+    for data in tqdm(json_data):
+        id = data.get("id")
+        if id in processed_ids:
+            continue
 
-#     for data in tqdm(json_data):
-#         id = data.get("id")
-#         if id in processed_ids:
-#             continue
+        image_names = [os.path.join(data.get("image"), str(i)+".png") for i in range(1, data.get("total_icons") + 1)]  # list of image paths
+        image_paths = [os.path.join(configs_para["image_dir"], img_name) for img_name in image_names]
+        prompt = build_prompt(image_paths)
 
-#         image_names = [os.path.join(data.get("image"), str(i)+".png") for i in range(1, data.get("total_icons") + 1)]  # list of image paths
-#         image_paths = [os.path.join(configs_para["image_dir"], img_name) for img_name in image_names]
-#         prompt = build_prompt(image_paths)
+        predict_answer = call_vllm_server(prompt, image_paths, model_path)
+        extract_answer = extract_answer_from_response(predict_answer)
+        # odd_lists = []
 
-#         predict_answer = call_vllm_server(prompt, image_paths, model_path)
-#         extract_answer = extract_answer_from_response(predict_answer)
-#         odd_lists = []
+        # odd_list = data.get("odd_icons", [])
+        # for odd in odd_list:
+        #     odd_lists.append(odd.get("icon_name"))
 
-#         odd_list = data.get("odd_icons", [])
-#         for odd in odd_list:
-#             odd_lists.append(odd.get("icon_name"))
+        save_item = {
+            "id": id,
+            "image":data.get("image"),
+            "image_num":data.get("total_icons"),
+            "prompt": prompt,
+            "predict_answer": predict_answer,
+            "extract_answer": extract_answer,
+            "answer": data.get("odd_indices", []),
+            "odd_count": data.get("num_odds"),
+        }
+        write_json(save_json_path, save_item)
 
-#         save_item = {
-#             "id": id,
-#             "image":data.get("image"),
-#             "image_num":data.get("total_icons"),
-#             "prompt": prompt,
-#             "predict_answer": predict_answer,
-#             "extract_answer": extract_answer,
-#             "answer": odd_lists,
-#             "odd_list": odd_list,
-#             "odd_count": data.get("num_odds"),
-#         }
-#         write_json(save_json_path, save_item)
-
-#     print(f"[INFO] ✅ Done! Saved results to {save_json_path}")
-
-
+    print(f"[INFO] ✅ Done! Saved results to {save_json_path}")
+    
 def main():
     parser = argparse.ArgumentParser(description="Run multimodal inference via vLLM Python API")
-    parser.add_argument("--model_name", type=str, default="oddgrid_sft_qwen3_vl_4b")
+    parser.add_argument("--model_name", type=str, default="Qwen3-VL-8B-Instruct")
     parser.add_argument(
         "--image_type",
         type=str,
