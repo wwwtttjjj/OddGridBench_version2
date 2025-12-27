@@ -33,8 +33,9 @@ def extract_answer_from_response(response_text):
 def build_prompt(image_paths: list):
     # Generate image index description (image1 corresponds to the 1st image, etc.)
     image_count = len(image_paths)
+    image_tokens = "\n".join([f"<image> image{i}" for i in range(1, image_count + 1)])
     image_desc = (
-        f"You will be given {image_count} images, labeled as image1, image2, …, image{image_count} "
+        f"{image_tokens}\n\nYou will be given {image_count} images, labeled as image1, image2, …, image{image_count} "
         f"(corresponding to the 1st, 2nd, …, and {image_count}th images in the input list, respectively).\n\n"
     )
 

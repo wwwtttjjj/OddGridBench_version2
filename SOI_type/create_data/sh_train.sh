@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e  # 出错就停止执行
 # source /nfsdata4/wengtengjin/oddgrid_task/env/easyr1/bin/activate
-train_num=3000
+train_num=30000
 
 # 要运行的命令列表
 commands=(

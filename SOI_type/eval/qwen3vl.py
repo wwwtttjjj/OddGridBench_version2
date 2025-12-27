@@ -18,7 +18,7 @@ API_URL = "http://localhost:8081/v1/chat/completions"
 def call_vllm_server(prompt, image_paths, model_path):
     """通过 vLLM REST API 调用模型"""
     messages = [{"role": "user", "content": []}]
-    print(image_paths)
+    # print(image_paths)
 
     for img_path in image_paths:
         img = Image.open(img_path).convert("RGB")
@@ -125,7 +125,7 @@ def run_vllm_http(args):
 
 def main():
     parser = argparse.ArgumentParser(description="Run multimodal inference via vLLM Python API")
-    parser.add_argument("--model_name", type=str, default="oddgrid_sft_qwen3_vl_4b")
+    parser.add_argument("--model_name", type=str, default="icon_SOI_sft_qwen3_vl_2b")
     parser.add_argument(
         "--image_type",
         type=str,
