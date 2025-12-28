@@ -1,0 +1,313 @@
+_wandb:
+    value:
+        cli_version: 0.22.2
+        e:
+            88pl9nsreq2olpr2u3s466y0omvf9wig:
+                args:
+                    - --node-ip-address=10.21.22.117
+                    - --node-manager-port=45269
+                    - --object-store-name=/tmp/ray/session_2025-12-28_13-22-02_285267_154/sockets/plasma_store
+                    - --raylet-name=/tmp/ray/session_2025-12-28_13-22-02_285267_154/sockets/raylet
+                    - --redis-address=None
+                    - --metrics-agent-port=65404
+                    - --logging-rotate-bytes=536870912
+                    - --logging-rotate-backup-count=5
+                    - --runtime-env-agent-port=62505
+                    - --gcs-address=10.21.22.117:57996
+                    - --session-name=session_2025-12-28_13-22-02_285267_154
+                    - --temp-dir=/tmp/ray
+                    - --webui=127.0.0.1:8265
+                    - --cluster-id=cf376a5a1f41a096e09dbb570377c199b057f56f8dda09e49e8ad6e7
+                    - --startup-token=48
+                    - --worker-launch-time-ms=1766928128704
+                    - --node-id=ed327aa120f2949582a849429116281772aed181300a213cc0924019
+                    - --runtime-env-hash=1366427770
+                cpu_count: 48
+                cpu_count_logical: 96
+                cudaVersion: "12.4"
+                disk:
+                    /:
+                        total: "5497862983680"
+                        used: "514788646912"
+                email: 1019495562@qq.com
+                executable: /jiangwenhao/wengtengjin/oddgrid_task/env/easyr1/bin/python3
+                git:
+                    commit: f2d925267e990c647ef1735cc6ff8860ed4f13ad
+                    remote: https://github.com/wwwtttjjj/OddGridBench_version2.git
+                gpu: NVIDIA A800 80GB PCIe
+                gpu_count: 4
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "85899345920"
+                      name: NVIDIA A800 80GB PCIe
+                      uuid: GPU-e2515543-a001-50d7-de63-f76986a36890
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "85899345920"
+                      name: NVIDIA A800 80GB PCIe
+                      uuid: GPU-f0e462cd-ace2-645b-acd4-deb5fefa985c
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "85899345920"
+                      name: NVIDIA A800 80GB PCIe
+                      uuid: GPU-cadf6035-2689-2743-1f4c-f1fe0dcef06a
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "85899345920"
+                      name: NVIDIA A800 80GB PCIe
+                      uuid: GPU-55ab562c-48af-ce91-bacd-18eef1955731
+                host: pytorch-f6a3db65-mc4qt
+                memory:
+                    total: "270110507008"
+                os: Linux-4.15.0-156-generic-x86_64-with-glibc2.35
+                program: /jiangwenhao/wengtengjin/oddgrid_task/env/easyr1/lib/python3.11/site-packages/ray/_private/workers/default_worker.py
+                python: CPython 3.11.14
+                root: /jiangwenhao/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/RL_code
+                startedAt: "2025-12-28T13:24:47.176185Z"
+                writerId: 88pl9nsreq2olpr2u3s466y0omvf9wig
+        m: []
+        python_version: 3.11.14
+        t:
+            "1":
+                - 1
+                - 11
+                - 30
+                - 41
+                - 49
+                - 51
+                - 71
+                - 95
+                - 105
+            "2":
+                - 1
+                - 11
+                - 30
+                - 41
+                - 49
+                - 51
+                - 71
+                - 95
+                - 105
+            "3":
+                - 2
+                - 13
+                - 16
+            "4": 3.11.14
+            "5": 0.22.2
+            "6": 4.57.1
+            "12": 0.22.2
+            "13": linux-x86_64
+algorithm:
+    value:
+        adv_estimator: grpo
+        disable_kl: false
+        filter_high: 0.99
+        filter_key: overall
+        filter_low: 0.01
+        gamma: 1
+        kl_coef: 0.01
+        kl_horizon: 10000
+        kl_penalty: low_var_kl
+        kl_target: 0.1
+        kl_type: fixed
+        lam: 1
+        online_filtering: false
+        use_kl_loss: true
+data:
+    value:
+        answer_key: answer
+        filter_overlong_prompts: false
+        filter_overlong_prompts_workers: 16
+        format_prompt: /jiangwenhao/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/RL_code/train_configs/format_prompt/oddgrid.jinja
+        image_dir: null
+        image_key: images
+        max_pixels: 1048576
+        max_prompt_length: 2048
+        max_response_length: 1024
+        min_pixels: 262144
+        mini_rollout_batch_size: null
+        override_chat_template: null
+        prompt_key: problem
+        rollout_batch_size: 512
+        seed: 1
+        shuffle: true
+        train_files: /jiangwenhao/wengtengjin/oddgrid_task/OddGridBench_clean/IOL_type/train/train_rl_data.jsonl
+        val_batch_size: 1024
+        val_files: /jiangwenhao/wengtengjin/oddgrid_task/OddGridBench_clean/IOL_type/train/test_rl_data.jsonl
+        video_fps: 2
+        video_key: videos
+trainer:
+    value:
+        critic_warmup: 0
+        experiment_name: _test
+        find_last_checkpoint: true
+        load_checkpoint_path: null
+        logger:
+            - file
+            - wandb
+        max_steps: 100
+        max_try_make_batch: 20
+        n_gpus_per_node: 2
+        nnodes: 1
+        project_name: Anomaly detection
+        ray_timeline: null
+        save_checkpoint_path: /jiangwenhao/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/RL_code/checkpoints/Anomaly detection/_test
+        save_freq: 10
+        save_limit: 4
+        save_model_only: false
+        total_epochs: 2
+        val_before_train: true
+        val_freq: 10
+        val_generations_to_log: 3
+        val_only: false
+worker:
+    value:
+        actor:
+            clip_ratio_dual: 3
+            clip_ratio_high: 0.3
+            clip_ratio_low: 0.2
+            disable_kl: false
+            dynamic_batching: true
+            fsdp:
+                enable_cpu_offload: false
+                enable_full_shard: false
+                enable_rank0_init: true
+                fsdp_size: -1
+                mp_buffer_dtype: fp32
+                mp_param_dtype: bf16
+                mp_reduce_dtype: fp32
+                torch_dtype: null
+                use_orig_params: false
+            global_batch_size: 256
+            global_batch_size_per_device: -1
+            kl_coef: 0.01
+            kl_penalty: low_var_kl
+            loss_avg_mode: token
+            loss_type: default
+            max_grad_norm: 1
+            micro_batch_size_per_device_for_experience: 2
+            micro_batch_size_per_device_for_update: 4
+            model:
+                enable_gradient_checkpointing: true
+                freeze_vision_tower: false
+                model_path: /jiangwenhao/wengtengjin/oddgrid_task/models/Qwen3-VL-2B-Instruct
+                tokenizer_path: /jiangwenhao/wengtengjin/oddgrid_task/models/Qwen3-VL-2B-Instruct
+                trust_remote_code: false
+            offload:
+                offload_optimizer: false
+                offload_params: false
+            optim:
+                betas:
+                    - 0.9
+                    - 0.999
+                lr: 1e-06
+                lr_warmup_ratio: 0
+                lr_warmup_steps: null
+                min_lr_ratio: null
+                strategy: adamw
+                training_steps: 100
+                warmup_style: constant
+                weight_decay: 0.01
+            padding_free: true
+            ppo_epochs: 1
+            strategy: fsdp
+            ulysses_size: 1
+            use_kl_loss: true
+            use_torch_compile: true
+        critic:
+            cliprange_value: 0.5
+            dynamic_batching: true
+            fsdp:
+                enable_cpu_offload: false
+                enable_full_shard: true
+                enable_rank0_init: true
+                fsdp_size: -1
+                mp_buffer_dtype: fp32
+                mp_param_dtype: bf16
+                mp_reduce_dtype: fp32
+                torch_dtype: null
+                use_orig_params: false
+            global_batch_size: 256
+            global_batch_size_per_device: -1
+            loss_avg_mode: token
+            max_grad_norm: 1
+            micro_batch_size_per_device_for_experience: 16
+            micro_batch_size_per_device_for_update: 4
+            model:
+                enable_gradient_checkpointing: true
+                freeze_vision_tower: false
+                model_path: null
+                tokenizer_path: null
+                trust_remote_code: true
+            offload:
+                offload_optimizer: false
+                offload_params: false
+            optim:
+                betas:
+                    - 0.9
+                    - 0.999
+                lr: 1e-06
+                lr_warmup_ratio: 0
+                lr_warmup_steps: null
+                min_lr_ratio: null
+                strategy: adamw
+                training_steps: 100
+                warmup_style: constant
+                weight_decay: 0.01
+            padding_free: false
+            ppo_epochs: 1
+            strategy: fsdp
+            ulysses_size: 1
+        hybrid_engine: true
+        ref:
+            dynamic_batching: true
+            fsdp:
+                enable_cpu_offload: false
+                enable_full_shard: true
+                enable_rank0_init: true
+                fsdp_size: -1
+                mp_buffer_dtype: fp32
+                mp_param_dtype: bf16
+                mp_reduce_dtype: fp32
+                torch_dtype: null
+                use_orig_params: false
+            micro_batch_size_per_device_for_experience: 2
+            offload:
+                offload_optimizer: false
+                offload_params: false
+            padding_free: true
+            strategy: fsdp
+            ulysses_size: 1
+            use_torch_compile: true
+        reward:
+            num_cpus: 1
+            reward_function: /jiangwenhao/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/RL_code/train_configs/reward_function/math.py
+            reward_function_name: compute_score
+            reward_type: batch
+            skip_special_tokens: true
+        rollout:
+            disable_log_stats: true
+            disable_tqdm: false
+            dtype: bf16
+            enable_chunked_prefill: false
+            enforce_eager: false
+            gpu_memory_utilization: 0.6
+            ignore_eos: false
+            limit_images: 0
+            max_model_len: null
+            max_num_batched_tokens: 8192
+            "n": 4
+            name: vllm
+            prompt_length: 2048
+            response_length: 1024
+            seed: 1
+            temperature: 1
+            tensor_parallel_size: 1
+            top_k: -1
+            top_p: 1
+            trust_remote_code: false
+            val_override_config:
+                "n": 1
+                temperature: 0.6
+                top_p: 0.95

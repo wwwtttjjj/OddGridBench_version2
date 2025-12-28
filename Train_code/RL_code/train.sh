@@ -5,4 +5,4 @@ source /nfsdata4/wengtengjin/oddgrid_task/env/easyr1/bin/activate
 
 
 
-bash mygrpo/qwen3_vl_2b_oddgrid_cispo.sh
+bash train_configs/qwen3_vl_2b_SOI_grpo.sh

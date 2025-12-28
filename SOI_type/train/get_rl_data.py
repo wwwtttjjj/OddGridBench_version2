@@ -1,0 +1,80 @@
+import json
+import os
+import sys
+import random
+
+# 允许从上级目录 import
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from eval.utils import build_prompt
+
+
+def convert_dataset(
+    in_json_path: str,
+    image_root: str,
+    out_json_path: str,
+    max_num: int = None
+):
+    """
+    将原始数据转换为 sharegpt 格式并保存
+
+    参数:
+    - in_json_path: 输入 json 路径 (train / test 均可)
+    - image_root: 图片根目录
+    - out_json_path: 输出 json 保存路径
+    - max_num: 最多转换多少条（None 表示不限制）
+    """
+
+    with open(in_json_path, "r", encoding="utf-8") as f:
+        raw = json.load(f)
+
+    samples = raw["data"] if isinstance(raw, dict) and "data" in raw else raw
+    processed = []
+
+    for item in samples:
+        answer = item.get("answer", "")
+        image = item.get("image", "")
+        odd_indices = item.get("odd_indices", [])
+
+        # ✅ 打乱顺序
+        # random.shuffle(odd_rows_cols)
+
+        # ✅ 生成最终 boxed 答案
+        answer = ",".join([f"image{r}" for r in odd_indices])
+
+
+
+        # ✅ 转换为绝对路径
+        image_abs = os.path.join(image_root, os.path.basename(image))
+        image_set = [os.path.join(image_abs, f"{i}.png") for i in range(1, item.get("total_icons") + 1)]
+        num_images = len(image_set)
+        image_tokens = "\n".join([f"<image> image{i}" for i in range(1, num_images + 1)])
+        # ✅ 构造 prompt
+        prompt = build_prompt(image_set)
+        processed.append({
+            "images": image_set,
+            "problem": f"{image_tokens}\n\n{prompt}",
+            "answer": f"{answer.strip()}"
+        })
+
+        if max_num is not None and len(processed) >= max_num:
+            break
+
+    # 写入 JSONL 文件
+    with open(out_json_path, "w", encoding="utf-8") as f:
+        for sample in processed:
+            f.write(json.dumps(sample, ensure_ascii=False) + "\n")
+
+    print(f"✅ 转换完成: {out_json_path}，共 {len(processed)} 条数据")
+
+if __name__ == "__main__":
+    train_json_path = "../create_data/train_data.json"
+    test_json_path  = "../create_data/test_data.json"
+
+    train_image_dir = "../../SOI_type/create_data/train_data/image"
+    test_image_dir  = "../../SOI_type/create_data/test_data/image"
+
+    train_out = "./train_rl_data.jsonl"
+    test_out  = "./test_rl_data.jsonl"
+
+    convert_dataset(train_json_path, train_image_dir, train_out, max_num=15000000)
+    convert_dataset(test_json_path,  test_image_dir,  test_out,  max_num=None)

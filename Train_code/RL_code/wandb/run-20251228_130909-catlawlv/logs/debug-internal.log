@@ -1,0 +1,6 @@
+{"time":"2025-12-28T13:09:10.041460446Z","level":"INFO","msg":"stream: starting","core version":"0.22.2"}
+{"time":"2025-12-28T13:09:10.656305749Z","level":"INFO","msg":"stream: created new stream","id":"catlawlv"}
+{"time":"2025-12-28T13:09:10.656415024Z","level":"INFO","msg":"handler: started","stream_id":"catlawlv"}
+{"time":"2025-12-28T13:09:10.660033363Z","level":"INFO","msg":"stream: started","id":"catlawlv"}
+{"time":"2025-12-28T13:09:10.66007105Z","level":"INFO","msg":"writer: started","stream_id":"catlawlv"}
+{"time":"2025-12-28T13:09:10.660076574Z","level":"INFO","msg":"sender: started","stream_id":"catlawlv"}

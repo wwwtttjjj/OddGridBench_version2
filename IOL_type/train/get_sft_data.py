@@ -31,7 +31,6 @@ def convert_dataset(
     processed = []
 
     for item in samples:
-        answer = item.get("answer", "")
         image = item.get("image", "")
         odd_rows_cols = item.get("odd_rows_cols", [])
 
