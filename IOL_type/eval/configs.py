@@ -16,6 +16,9 @@ def get_configs(args):
     elif args.data_type == "mnist":
         image_dir = "../../Other_data/mnist/iol_test_data/images"
         json_path = "../../Other_data/mnist/iol_test_data/iol_test_data.json"
+    elif args.data_type == "VisA":
+        image_dir = "../../Other_data/VisA/iol_test_data/images"
+        json_path = "../../Other_data/VisA/iol_test_data/iol_test_data.json"
 
     # 输出路径
     Result_root = args.data_type + "_output/"

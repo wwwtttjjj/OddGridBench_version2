@@ -125,7 +125,7 @@ def run_vllm_http(args):
 
 def main():
     parser = argparse.ArgumentParser(description="Run multimodal inference via vLLM Python API")
-    parser.add_argument("--model_name", type=str, default="icon_SOI_sft_qwen3_vl_2b")
+    parser.add_argument("--model_name", type=str, default="Qwen3-VL-32B-Instruct")
     parser.add_argument(
         "--image_type",
         type=str,
@@ -136,7 +136,7 @@ def main():
         "--data_type",
         type=str,
         default="mnist",
-        help="icon, mnist, hanzi"
+        help="icon, mnist, hanzi, VisA"
     )
 
     args = parser.parse_args()

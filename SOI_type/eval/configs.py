@@ -19,6 +19,9 @@ def get_configs(args):
     elif args.data_type == "icontrain":#test
         image_dir = "../create_data/train_data/image"
         json_path = "../create_data/train_data.json"
+    elif args.data_type == "VisA":
+        image_dir = "../../Other_data/VisA/soi_test_data/images"
+        json_path = "../../Other_data/VisA/soi_test_data/soi_test_data.json"
 
     # 输出路径
     Result_root = args.data_type + "_output/"
