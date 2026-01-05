@@ -3,10 +3,10 @@ import json
 from pathlib import Path
 from PIL import Image
 import uuid
-import numpy as np
 import shutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
+from threading import Lock
 from merge_all_data import merge_iol_datasets
 
 # ======================
@@ -16,13 +16,10 @@ MIN_GRID = 3
 MAX_GRID = 5
 
 MIN_IMG_MAX_SIDE = 400
-MAX_IMG_MAX_SIDE = 400
+MAX_IMG_MAX_SIDE = 500
 
 MIN_GAP = 10
-MAX_GAP = 30
-
-MIN_ODD = 0
-MAX_ODD = 2
+MAX_GAP = 20
 
 MIN_MARGIN = 20
 MAX_MARGIN = 35
@@ -31,27 +28,21 @@ MIN_CELL_PADDING = 20
 MAX_CELL_PADDING = 35
 
 BG_COLOR = (255, 255, 255)
-MAX_CANVAS_SIZE = 2048  # 最终整图最长边限制
+MAX_CANVAS_SIZE = 2048
 
 
 # ======================
-# 图像工具函数
+# 图像工具
 # ======================
-# def add_gaussian_noise_pil(pil_img, sigma=0.02):
-#     img = np.asarray(pil_img).astype(np.float32) / 255.0
-#     noise = np.random.normal(0, sigma, img.shape).astype(np.float32)
-#     out = np.clip(img + noise, 0.0, 1.0)
-#     return Image.fromarray((out * 255.0).astype(np.uint8))
-
-
 def resize_image_max_side(pil_img, max_side):
     w, h = pil_img.size
     if max(w, h) <= max_side:
         return pil_img
     scale = max_side / max(w, h)
-    new_w = int(round(w * scale))
-    new_h = int(round(h * scale))
-    return pil_img.resize((new_w, new_h), Image.BILINEAR)
+    return pil_img.resize(
+        (int(round(w * scale)), int(round(h * scale))),
+        Image.BILINEAR,
+    )
 
 
 def resize_longest_side(pil_img, max_size):
@@ -59,84 +50,66 @@ def resize_longest_side(pil_img, max_size):
     if max(w, h) <= max_size:
         return pil_img, 1.0
     scale = max_size / max(w, h)
-    new_w = int(round(w * scale))
-    new_h = int(round(h * scale))
-    return pil_img.resize((new_w, new_h), Image.BILINEAR), scale
+    return pil_img.resize(
+        (int(round(w * scale)), int(round(h * scale))),
+        Image.BILINEAR,
+    ), scale
 
 
 def load_image_list(img_dir: Path):
-    imgs = sorted(img_dir.glob("*.JPG"))
+    imgs = sorted(img_dir.glob("*.JPG")) + sorted(img_dir.glob("*.png")) + sorted(img_dir.glob("*.bmp"))
     if not imgs:
-        raise RuntimeError(f"No JPG images in {img_dir}")
+        raise RuntimeError(f"No images in {img_dir}")
     return imgs
 
 
 # ======================
-# 核心生成逻辑
+# 只负责拼图（不 random grid）
 # ======================
-def generate_single_iol(normal_imgs, anomaly_imgs):
-    rows = random.randint(MIN_GRID, MAX_GRID)
-    cols = random.randint(MIN_GRID, MAX_GRID)
+def generate_single_iol_from_paths(
+    rows,
+    cols,
+    normal_paths,
+    anomaly_paths,
+):
     num_cells = rows * cols
+    odd_k = len(anomaly_paths)
 
-    odd_k = random.randint(MIN_ODD, min(MAX_ODD, num_cells))
     odd_indices = set(random.sample(range(num_cells), odd_k))
 
     gap = random.randint(MIN_GAP, MAX_GAP)
     margin = random.randint(MIN_MARGIN, MAX_MARGIN)
     cell_padding = random.randint(MIN_CELL_PADDING, MAX_CELL_PADDING)
     img_max_side = random.randint(MIN_IMG_MAX_SIDE, MAX_IMG_MAX_SIDE)
-    noise_sigma = random.uniform(0.03, 0.05)
 
-    normal_paths = random.choices(normal_imgs, k=num_cells - odd_k)
-    anomaly_paths = (
-        random.sample(anomaly_imgs, odd_k)
-        if len(anomaly_imgs) >= odd_k
-        else random.choices(anomaly_imgs, k=odd_k)
-    )
-
-    normal_ptr = 0
-    anomaly_ptr = 0
-
-    # -------- 先准备所有 cell 的 image 和 cell 尺寸 --------
     cells = []
     cell_sizes = []
 
+    n_ptr, a_ptr = 0, 0
+
     for idx in range(num_cells):
         if idx in odd_indices:
-            img_path = anomaly_paths[anomaly_ptr]
-            anomaly_ptr += 1
+            img_path = anomaly_paths[a_ptr]
+            a_ptr += 1
         else:
-            img_path = normal_paths[normal_ptr]
-            normal_ptr += 1
+            img_path = normal_paths[n_ptr]
+            n_ptr += 1
 
         img = Image.open(img_path).convert("RGB")
         img = resize_image_max_side(img, img_max_side)
-        # img = add_gaussian_noise_pil(img, sigma=noise_sigma)
 
         w, h = img.size
-        cell_w = w + 2 * cell_padding
-        cell_h = h + 2 * cell_padding
-
         cells.append(img)
-        cell_sizes.append((cell_w, cell_h))
+        cell_sizes.append((w + 2 * cell_padding, h + 2 * cell_padding))
 
-    # -------- 计算 grid 尺寸（行高对齐） --------
-    row_heights = []
-    for r in range(rows):
-        heights = [
-            cell_sizes[r * cols + c][1]
-            for c in range(cols)
-        ]
-        row_heights.append(max(heights))
-
-    col_widths = []
-    for c in range(cols):
-        widths = [
-            cell_sizes[r * cols + c][0]
-            for r in range(rows)
-        ]
-        col_widths.append(max(widths))
+    row_heights = [
+        max(cell_sizes[r * cols + c][1] for c in range(cols))
+        for r in range(rows)
+    ]
+    col_widths = [
+        max(cell_sizes[r * cols + c][0] for r in range(rows))
+        for c in range(cols)
+    ]
 
     grid_w = sum(col_widths) + (cols - 1) * gap
     grid_h = sum(row_heights) + (rows - 1) * gap
@@ -146,7 +119,6 @@ def generate_single_iol(normal_imgs, anomaly_imgs):
 
     canvas = Image.new("RGB", (W, H), BG_COLOR)
 
-    # -------- paste 图像 --------
     idx = 0
     y_cursor = margin
     for r in range(rows):
@@ -154,11 +126,10 @@ def generate_single_iol(normal_imgs, anomaly_imgs):
         for c in range(cols):
             img = cells[idx]
             iw, ih = img.size
-            cell_w, cell_h = cell_sizes[idx]
+            cell_w, _ = cell_sizes[idx]
 
             x_img = x_cursor + (cell_w - iw) // 2
             y_img = y_cursor + (row_heights[r] - ih) // 2
-
             canvas.paste(img, (x_img, y_img))
 
             x_cursor += col_widths[c] + gap
@@ -182,7 +153,7 @@ def generate_single_iol(normal_imgs, anomaly_imgs):
 # ======================
 # 数据集生成
 # ======================
-def generate_dataset(data_root: str, out_dir: str, samples: int, seed: int, num_threads: int):
+def generate_dataset(data_root, out_dir, samples, seed, num_threads):
     random.seed(seed)
 
     data_root = Path(data_root)
@@ -194,33 +165,90 @@ def generate_dataset(data_root: str, out_dir: str, samples: int, seed: int, num_
     img_dir = out_dir / "images"
     img_dir.mkdir(parents=True, exist_ok=True)
 
-    normal_imgs = load_image_list(data_root / "Normal")
-    anomaly_imgs = load_image_list(data_root / "Anomaly")
+    normal_all = load_image_list(data_root / "Normal")
+    anomaly_all = load_image_list(data_root / "Abnormal")
 
+    random.shuffle(normal_all)
+    random.shuffle(anomaly_all)
+
+    normal_pool = normal_all.copy()
+    anomaly_pool = anomaly_all.copy()
+    normal_ptr = 0
+
+    lock = Lock()
+    stop_flag = {"stop": False}
     annotations = []
 
     def worker(idx):
-        img, meta = generate_single_iol(normal_imgs, anomaly_imgs)
-        # img = add_gaussian_noise_pil(img, sigma=0.01)
+        nonlocal normal_ptr
+
+        # ✅ 已停机：直接退出，绝不写文件
+        if stop_flag["stop"]:
+            return None
+
+        # odd 数量偏向 1
+        odd_k = random.choices([0, 1, 2], weights=[2, 6, 2])[0]
+
+        rows = random.randint(MIN_GRID, MAX_GRID)
+        cols = random.randint(MIN_GRID, MAX_GRID)
+        num_cells = rows * cols
+        need_normal = num_cells - odd_k
+
+        with lock:
+            if stop_flag["stop"]:
+                return None
+
+            if len(anomaly_pool) < odd_k:
+                # ✅ anomaly 不够：全局停机
+                stop_flag["stop"] = True
+                return None
+
+            anomaly_paths = [anomaly_pool.pop() for _ in range(odd_k)]
+
+            normal_paths = []
+            for _ in range(need_normal):
+                if normal_ptr >= len(normal_pool):
+                    random.shuffle(normal_pool)
+                    normal_ptr = 0
+                normal_paths.append(normal_pool[normal_ptr])
+                normal_ptr += 1
+
+        # 锁外做重活
+        img, meta = generate_single_iol_from_paths(
+            rows=rows,
+            cols=cols,
+            normal_paths=normal_paths,
+            anomaly_paths=anomaly_paths,
+        )
+
+        # ✅ 再次检查：避免锁外耗时期间已经停机（保险）
+        if stop_flag["stop"]:
+            return None
 
         img, scale = resize_longest_side(img, MAX_CANVAS_SIZE)
 
-        name = f"image_{os.path.basename(data_root)}_{idx}.png"
+        name = f"image_{data_root.name}_{idx}.png"
         img.save(img_dir / name)
 
         meta.update({
             "image": name,
             "image_size": list(img.size),
             "resize_scale": scale,
+            # "source_data": f"VisA_{data_root.name}",
         })
         return meta
 
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
         futures = [executor.submit(worker, i) for i in range(samples)]
-        for j, f in enumerate(as_completed(futures)):
-            annotations.append(f.result())
-            if (j + 1) % 100 == 0:
-                print(f"[{j+1}/{samples}] generated")
+
+        for f in as_completed(futures):
+            res = f.result()
+            if res is None:
+                if stop_flag["stop"]:
+                    print("[INFO] Anomaly images exhausted, stop generation.")
+                    break
+                continue
+            annotations.append(res)
 
     with (out_dir / "iol_test_data.json").open("w", encoding="utf-8") as f:
         json.dump(annotations, f, ensure_ascii=False, indent=2)
@@ -229,31 +257,29 @@ def generate_dataset(data_root: str, out_dir: str, samples: int, seed: int, num_
 # ======================
 # main
 # ======================
-import shutil
 if __name__ == "__main__":
-    DATA_ROOT = "A_cropped_images/"
-        # 清空输出目录
-    save_root = Path("A_iol_type_data/")
-    if save_root.exists():
-        shutil.rmtree(save_root)
-    save_root.mkdir(parents=True, exist_ok=True)
+    DATA_ROOT = "A_cropped_images"
+    SAVE_ROOT = Path("A_iol_type_data")
 
-    SAMPLES = 10
+    if SAVE_ROOT.exists():
+        shutil.rmtree(SAVE_ROOT)
+    SAVE_ROOT.mkdir(parents=True, exist_ok=True)
+
+    SAMPLES = 1000
     SEED = random.randint(0, 10000)
     THREADS = 8
 
-    # ===== 枚举 DATA_ROOT 下的所有子目录 =====
     subdirs = [
         os.path.join(DATA_ROOT, d)
         for d in os.listdir(DATA_ROOT)
         if os.path.isdir(os.path.join(DATA_ROOT, d))
     ]
 
-    print(f"[INFO] Found {len(subdirs)} sub-datasets under {DATA_ROOT}")
+    print(f"[INFO] Found {len(subdirs)} sub-datasets")
 
     for data_root in sorted(subdirs):
-        print(f"[INFO] Generating dataset from: {data_root}")
-        OUT_DIR = save_root / f"iol_data_{os.path.basename(data_root)}"
+        print(f"[INFO] Generating from {data_root}")
+        OUT_DIR = SAVE_ROOT / f"iol_data_{os.path.basename(data_root)}"
         generate_dataset(
             data_root=data_root,
             out_dir=OUT_DIR,
@@ -261,11 +287,8 @@ if __name__ == "__main__":
             seed=SEED,
             num_threads=THREADS,
         )
-        
-    SRC_ROOT = Path("A_iol_type_data")
-    DST_ROOT = Path("iol_test_data")
 
     merge_iol_datasets(
-        src_root=SRC_ROOT,
-        dst_root=DST_ROOT,
+        src_root=SAVE_ROOT,
+        dst_root=Path("iol_test_data"),
     )

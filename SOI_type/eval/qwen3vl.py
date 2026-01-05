@@ -89,7 +89,7 @@ def run_vllm_http(args):
     with open(json_path, 'r', encoding='utf-8') as f:
         json_data = json.load(f)
 
-    print(f"[INFO] Total samples: {len(json_data)}; processed: {len(processed_ids)}")
+    # print(f"[INFO] Total samples: {len(json_data)}; processed: {len(processed_ids)}")
 
     for data in tqdm(json_data):
         id = data.get("id")
@@ -135,8 +135,8 @@ def main():
     parser.add_argument(
         "--data_type",
         type=str,
-        default="mnist",
-        help="icon, mnist, hanzi, VisA"
+        default="VisA",
+        help="icon, mnist, hanzi, VisA, BTech, MVTEC"
     )
 
     args = parser.parse_args()

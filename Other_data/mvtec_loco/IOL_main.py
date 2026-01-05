@@ -68,7 +68,7 @@ def process_json_and_images(src_json_path: str, output_root_dir: str):
                 counter += 1
             shutil.copy2(src_image_path, temp_dst_path)
             new_image_name = temp_dst_path.name
-            print(f"图片已复制：{src_image_path} → {temp_dst_path}")
+            # print(f"图片已复制：{src_image_path} → {temp_dst_path}")
         else:
             print(f"警告：原始图片不存在，跳过复制：{src_image_path}")
 

@@ -79,7 +79,7 @@ def merge_iol_datasets(
                 print(f"[WARN] Missing image: {src_img}")
                 continue
 
-            new_img_name = f"{dataset_name}_{src_img.name}"
+            new_img_name = f"{src_img.name}"
             dst_img = dst_images / new_img_name
 
             shutil.copy2(src_img, dst_img)
@@ -88,7 +88,7 @@ def merge_iol_datasets(
             item["image"] = new_img_name
 
             # 记录来源数据集
-            item["source_dataset"] = dataset_name
+            item["source_dataset"] = f"MVTEC_{dataset_name}"
 
         merged_records.extend(records)
 
@@ -179,7 +179,7 @@ def merge_soi_datasets(
 
         for item in records:
             # image 字段保持不变（仍然是 images_xxx_k）
-            item["source_dataset"] = dataset_name
+            item["source_dataset"] = f"MVTEC_{dataset_name}"
             merged_records.append(item)
 
     # ===== save merged json =====

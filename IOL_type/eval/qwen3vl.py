@@ -127,7 +127,7 @@ def main():
         "--data_type",
         type=str,
         default="mnist",
-        help="icon, mnist, hanzi, VisA"
+        help="icon, mnist, hanzi, VisA, MVTEC, MVTEC_loco, BTech"
     )
     
     args = parser.parse_args()

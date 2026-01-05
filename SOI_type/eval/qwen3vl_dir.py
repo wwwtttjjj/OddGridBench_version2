@@ -23,6 +23,7 @@ def get_vllm_model(model_path):
     if _VLLM_MODEL is None:
         _VLLM_MODEL = LLM(
             model=model_path,
+            max_model_len=12000,
             trust_remote_code=True,
             tensor_parallel_size=tp,
         )
@@ -77,8 +78,8 @@ def run_vllm_http(args):
     json_path = configs_para["json_path"]
     model_path = configs_para["model_path"]
     save_json_path = configs_para["save_path"]
-    if os.path.exists(save_json_path):
-        os.remove(save_json_path)
+    # if os.path.exists(save_json_path):
+    #     os.remove(save_json_path)
 
     if not json_path or not model_path:
         raise ValueError(f"Unknown model_name: {args.model_name}")
@@ -95,7 +96,7 @@ def run_vllm_http(args):
     with open(json_path, 'r', encoding='utf-8') as f:
         json_data = json.load(f)
 
-    print(f"[INFO] Total samples: {len(json_data)}; processed: {len(processed_ids)}")
+    # print(f"[INFO] Total samples: {len(json_data)}; processed: {len(processed_ids)}")
 
     for data in tqdm(json_data):
         id = data.get("id")
@@ -130,7 +131,7 @@ def run_vllm_http(args):
     
 def main():
     parser = argparse.ArgumentParser(description="Run multimodal inference via vLLM Python API")
-    parser.add_argument("--model_name", type=str, default="Qwen3-VL-8B-Instruct")
+    parser.add_argument("--model_name", type=str, default="Qwen3-VL-32B-Instruct")
     parser.add_argument(
         "--image_type",
         type=str,
@@ -140,8 +141,8 @@ def main():
     parser.add_argument(
         "--data_type",
         type=str,
-        default="icon",
-        help="icon, mnist, hanzi"
+        default="VisA",
+        help="icon, mnist, hanzi, VisA, BTech, MVTEC"
     )
 
     args = parser.parse_args()

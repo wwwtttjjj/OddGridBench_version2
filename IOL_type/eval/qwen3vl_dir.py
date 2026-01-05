@@ -4,7 +4,6 @@ import json
 import base64
 from tqdm import tqdm
 import torch
-
 from configs import get_configs, max_new_tokens
 from utils import *
 
@@ -23,6 +22,7 @@ def get_vllm_model(model_path):
     if _VLLM_MODEL is None:
         _VLLM_MODEL = LLM(
             model=model_path,
+            max_model_len=12000,
             trust_remote_code=True,
             tensor_parallel_size=tp,
         )

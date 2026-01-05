@@ -171,7 +171,7 @@ def process_one_image_name(image_path, box_mode="qwen1000", padding=0):
 # 多线程主入口
 # ======================
 def main():
-    image_name_list = ["capsule", "hazelnut", "metal_nut", "pill", "screw", "toothbrush", "transistor"]
+    image_name_list = ["capsule", "hazelnut", "metal_nut", "pill", "toothbrush", "transistor"]
     image_path_list = ["manual_images/" + name for name in image_name_list]
     
     box_mode = "qwen1000"

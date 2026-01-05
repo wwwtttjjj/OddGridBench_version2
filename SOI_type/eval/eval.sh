@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
-DATA_TYPES=(icon mnist hanzi)
+# DATA_TYPES=(icon mnist hanzi VisA BTech MVTEC)
+DATA_TYPES=(VisA BTech MVTEC)
+
 MODELS=(
   Qwen3-VL-2B-Instruct
-  Qwen3-VL-4B-Instruct
+  # Qwen3-VL-4B-Instruct
   Qwen3-VL-8B-Instruct
-  Qwen3-VL-32B-Instruct
+  # Qwen3-VL-32B-Instruct
 )
 
 for data_type in "${DATA_TYPES[@]}"; do

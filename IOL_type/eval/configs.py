@@ -19,6 +19,15 @@ def get_configs(args):
     elif args.data_type == "VisA":
         image_dir = "../../Other_data/VisA/iol_test_data/images"
         json_path = "../../Other_data/VisA/iol_test_data/iol_test_data.json"
+    elif args.data_type == "BTech":
+        image_dir = "../../Other_data/BTech_Dataset_transformed/iol_test_data/images"
+        json_path = "../../Other_data/BTech_Dataset_transformed/iol_test_data/iol_test_data.json"
+    elif args.data_type == "MVTEC_loco":
+        image_dir = "../../Other_data/mvtec_loco/iol_test_data/images"
+        json_path = "../../Other_data/mvtec_loco/iol_test_data/iol_test_data.json"
+    elif args.data_type == "MVTEC":
+        image_dir = "../../Other_data/mvtec/iol_test_data/images"
+        json_path = "../../Other_data/mvtec/iol_test_data/iol_test_data.json"
 
     # 输出路径
     Result_root = args.data_type + "_output/"
