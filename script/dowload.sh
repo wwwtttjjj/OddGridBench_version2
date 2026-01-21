@@ -1,0 +1,1 @@
+nohup python get_models.py > output.log 2>&1 &

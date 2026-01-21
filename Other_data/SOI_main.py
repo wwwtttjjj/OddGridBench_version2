@@ -13,7 +13,7 @@ import argparse
 # 参数范围
 # ======================
 
-MIN_SET_SIZE = 12
+MIN_SET_SIZE = 9
 MAX_SET_SIZE = 20
 
 MIN_CELL_SIZE = 112
@@ -69,8 +69,8 @@ def generate_single_soi(digit_pool: dict):
         raise RuntimeError(f"Digit {digit} must have >= 2 images")
 
     num_images = random.randint(MIN_SET_SIZE, MAX_SET_SIZE)
-    odd_k = random.randint(MIN_ODD, min(MAX_ODD, num_images))
-
+    # odd_k = random.randint(MIN_ODD, min(MAX_ODD, num_images))
+    odd_k = random.choices([0, 1, 2], weights=[1, 6, 3])[0]
     base_path = random.choice(paths)
 
     # ⚠️ 注意：内部仍然用 0-based，最后统一 +1

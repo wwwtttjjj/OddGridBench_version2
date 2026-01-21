@@ -61,24 +61,46 @@ def build_prompt(image_paths: list):
     #     "Example output for final answer:\n"
     #     "\\boxed{image2, image5}\n"
     # )
+    # prompt = (
+    #     f"{image_tokens}\n\n"
+    #     f"你将看到 {image_count} 张图像，分别标记为 image1、image2、……、image{image_count}，"
+    #     f"它们分别对应输入列表中的第 1 张、第 2 张、……、第 {image_count} 张图像。\n\n"
+
+    #     "绝大多数图像中的物体遵循一致的视觉模式，只有少部分图像是异常的（一个或多个），"
+    #     "但也有可能所有图像均为正常。"
+    #     "若存在异常图像，它们通常在视觉上偏离了大多数正常图像，"
+    #     "例如在外观、结构或其他可感知属性上存在明显差异。\n\n"
+
+    #     "你的核心任务是：找出这些图像中【所有】异常图像。\n\n"
+
+    #     "你可以在回答前进行必要的观察与分析，但【最终答案】必须且只能使用一个 \\boxed{ }。"
+    #     "若不存在任何异常图像，请输出 \\boxed{}。\n\n"
+
+    #     "存在一个异常图像的输出示例：……\\boxed{image2}\n"
+    #     "存在多个异常图像的输出示例：……\\boxed{image2,image3}\n"
+    #     "不存在异常图像的输出示例：……\\boxed{}\n"
+    # )
     prompt = (
-        f"{image_tokens}\n\n"
-        f"你将看到 {image_count} 张图像，分别标记为 image1、image2、……、image{image_count}，"
-        f"它们分别对应输入列表中的第 1 张、第 2 张、……、第 {image_count} 张图像。\n\n"
+    f"{image_tokens}\n\n"
+    f"You are presented with {image_count} images, labeled as image1, image2, ..., image{image_count}. "
+    f"These correspond to the 1st, 2nd, ..., {image_count}-th image in the input sequence respectively.\n\n"
 
-        "绝大多数图像中的物体遵循一致的视觉模式，只有少部分图像是异常的（一个或多个），"
-        "但也有可能所有图像均为正常。"
-        "若存在异常图像，它们通常在视觉上偏离了大多数正常图像，"
-        "例如在外观、结构或其他可感知属性上存在明显差异。\n\n"
+    "The objects in the vast majority of these images follow a consistent visual pattern. "
+    "A small number of images (one or more) may be anomalous, though it is also possible that all images are normal. "
+    "Anomalous images typically deviate from the majority pattern in terms of appearance, structure, "
+    "or other perceptible visual attributes.\n\n"
 
-        "你的核心任务是：找出这些图像中【所有】异常图像。\n\n"
+    "Your core task is: Identify ALL anomalous images from this set.\n\n"
 
-        "你可以在回答前进行必要的观察与分析，但【最终答案】必须且只能使用一个 \\boxed{ }。"
-        "若不存在任何异常图像，请输出 \\boxed{}。\n\n"
+    "Strictly adhere to the following output rules:\n"
+    "1. You are encouraged to perform detailed observation and comparative analysis before providing the final answer. "
+    "2. The FINAL ANSWER must be contained within exactly one \\boxed{{}} block. "
+    "Inside the box, list the labels of all anomalous images (e.g., image1, image2) separated by commas without spaces.\n"
+    "3. If no anomalous images are found, output \\boxed{{}}.\n\n"
 
-        "存在一个异常图像的输出示例：……\\boxed{image2}\n"
-        "存在多个异常图像的输出示例：……\\boxed{image2,image3}\n"
-        "不存在异常图像的输出示例：……\\boxed{}\n"
-    )
+    "Example with one anomaly: ... \\boxed{{image2}}\n"
+    "Example with multiple anomalies: ... \\boxed{{image2,image3}}\n"
+    "Example with no anomalies: ... \\boxed{{}}\n"
+)
 
     return prompt

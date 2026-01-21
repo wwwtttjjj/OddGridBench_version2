@@ -135,7 +135,13 @@ def eval_json_file(json_path: Path):
         f1_sum / n if n else 0.0,
     )
 
-
+def model_size_key(model_name: str):
+    """
+    从模型名中提取规模数字，用于排序
+    e.g. Qwen3-VL-32B-Instruct -> 32
+    """
+    m = re.search(r"-(\d+)B-", model_name)
+    return int(m.group(1)) if m else float("inf")
 # =========================
 # Evaluate a directory
 # =========================
@@ -154,11 +160,14 @@ def eval_json_dir(json_dir: str, out_csv: str):
     with open(out_csv, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["model", "EM", "F1"])
-        for model_name, m in results.items():
+
+        # ✅ 按模型规模排序
+        for model_name in sorted(results.keys(), key=model_size_key):
+            m = results[model_name]
             writer.writerow([
                 model_name,
-                f"{m['EM']*100:.2f}",
-                f"{m['F1']*100:.2f}",
+                f"{m['EM'] * 100:.2f}",
+                f"{m['F1'] * 100:.2f}",
             ])
 
     print(f"✅ Saved CSV to: {out_csv}")

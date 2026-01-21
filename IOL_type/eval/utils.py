@@ -74,27 +74,49 @@ def build_prompt(data):
     #     " - Anomalous objects: \\boxed{(1,4),(2,1)} (extra text)\n"
     #     " - \\boxed{(1, 4), (2, 1)}\n"
     # )
+#     prompt = (
+#     f"图像展示了一个 {grid_str} 的网格，每个单元格中包含一个物体。"
+#     "绝大多数物体遵循一致的视觉模式，只有少部分物体是异常的（一个或者多个），但也有可能所有物体均为正常。"
+#     "若存在异常物体，它们通常在视觉上偏离了大多数正常物体，"
+#     "例如在外观、结构或其他可感知属性上存在明显差异。\n\n"
+
+#     "你的核心任务是：找出网格中【所有】异常物体。\n\n"
+
+#     "请严格遵守以下输出规则：\n"
+#     "1. 对于每一个异常物体，给出其坐标，格式为 (行,列)。\n"
+#     "   - 左上角的单元格定义为 (1,1)。\n"
+#     "   - 行号从上到下递增，列号从左到右递增。\n"
+#     "2. 你可以在回答前进行必要的观察与分析，但【最终答案】必须且只能使用一个 \\boxed{ }，"
+#     "将所有异常物体的坐标列表完整包裹。\n"
+#     "3. 坐标之间使用英文逗号分隔，不要包含空格。\n"
+#     "4. 若不存在任何异常物体，请输出 \\boxed{}。\n\n"
+
+#     "存在一个异常物体的输出示例：……\\boxed{(2,2)}\n"
+#     "存在多个异常物体的输出示例：……\\boxed{(2,2),(3,1)，... ，}\n"
+#     "不存在异常物体的输出示例：……\\boxed{}\n"
+# )
     prompt = (
-    f"图像展示了一个 {grid_str} 的网格，每个单元格中包含一个物体。"
-    "绝大多数物体遵循一致的视觉模式，只有少部分物体是异常的（一个或者多个），但也有可能所有物体均为正常。"
-    "若存在异常物体，它们通常在视觉上偏离了大多数正常物体，"
-    "例如在外观、结构或其他可感知属性上存在明显差异。\n\n"
+        f"The image displays a {grid_str} grid, where each cell contains an object. "
+        "The vast majority of these objects follow a consistent visual pattern, "
+        "while a few (one or more) may be anomalous. It is also possible that all objects are normal. "
+        "Anomalous objects typically deviate from the majority in terms of appearance, structure, "
+        "or other perceptible visual attributes.\n\n"
 
-    "你的核心任务是：找出网格中【所有】异常物体。\n\n"
+        "Your core task is: Identify ALL anomalous objects in the grid.\n\n"
 
-    "请严格遵守以下输出规则：\n"
-    "1. 对于每一个异常物体，给出其坐标，格式为 (行,列)。\n"
-    "   - 左上角的单元格定义为 (1,1)。\n"
-    "   - 行号从上到下递增，列号从左到右递增。\n"
-    "2. 你可以在回答前进行必要的观察与分析，但【最终答案】必须且只能使用一个 \\boxed{ }，"
-    "将所有异常物体的坐标列表完整包裹。\n"
-    "3. 坐标之间使用英文逗号分隔，不要包含空格。\n"
-    "4. 若不存在任何异常物体，请输出 \\boxed{}。\n\n"
+        "Strictly adhere to the following output rules:\n"
+        "1. For each anomalous object, provide its coordinates in the format (row,column).\n"
+        "   - The top-left cell is defined as (1,1).\n"
+        "   - Row indices increase from top to bottom; column indices increase from left to right.\n"
+        "2. You are encouraged to perform detailed observation and analysis before providing the final answer. "
+        "However, the FINAL ANSWER must be contained within exactly one \\boxed{{}} block, "
+        "enclosing the complete list of coordinates for all anomalous objects.\n"
+        "3. Use commas to separate coordinates within the box, and do NOT include any spaces.\n"
+        "4. If no anomalous objects are found, output \\boxed{{}}.\n\n"
 
-    "存在一个异常物体的输出示例：……\\boxed{(2,2)}\n"
-    "存在多个异常物体的输出示例：……\\boxed{(2,2),(3,1)，... ，}\n"
-    "不存在异常物体的输出示例：……\\boxed{}\n"
-)
-
+        "Example with one anomaly: ... \\boxed{{(2,2)}}\n"
+        "Example with multiple anomalies: ... \\boxed{{(2,2),(3,1)}}\n"
+        "Example with no anomalies: ... \\boxed{{}}\n"
+    )
     return prompt
 

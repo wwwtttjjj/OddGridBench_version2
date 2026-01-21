@@ -14,8 +14,8 @@ from merge_all_data import merge_soi_datasets
 # ======================
 # 参数范围（SOI 语义不变）
 # ======================
-MIN_SET_SIZE = 8
-MAX_SET_SIZE = 15
+MIN_SET_SIZE = 9
+MAX_SET_SIZE = 20
 
 MIN_CELL_MAX_SIDE = 400
 MAX_CELL_MAX_SIDE = 500
@@ -90,7 +90,7 @@ def generate_single_soi(
         num_images = random.randint(MIN_SET_SIZE, MAX_SET_SIZE)
 
         # odd_k：0 / 2 少，1 多
-        odd_k = random.choices([0, 1, 2], weights=[2, 6, 2])[0]
+        odd_k = random.choices([0, 1, 2], weights=[1, 6, 3])[0]
         odd_k = min(odd_k, num_images)
 
         # ❗ anomaly 不够 → 全局停机

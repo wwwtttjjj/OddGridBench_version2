@@ -187,7 +187,7 @@ def generate_dataset(data_root, out_dir, samples, seed, num_threads):
             return None
 
         # odd 数量偏向 1
-        odd_k = random.choices([0, 1, 2], weights=[2, 6, 2])[0]
+        odd_k = random.choices([0, 1, 2], weights=[1, 6, 3])[0]
 
         rows = random.randint(MIN_GRID, MAX_GRID)
         cols = random.randint(MIN_GRID, MAX_GRID)

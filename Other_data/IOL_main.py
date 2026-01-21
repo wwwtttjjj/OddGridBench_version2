@@ -11,8 +11,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 # ======================
 # 参数范围
 # ======================
-MIN_GRID = 6
-MAX_GRID = 10
+MIN_GRID = 3
+MAX_GRID = 5
 
 MIN_CELL_SIZE = 40
 MAX_CELL_SIZE = 50
@@ -20,8 +20,8 @@ MAX_CELL_SIZE = 50
 MIN_GAP = 10
 MAX_GAP = 30
 
-MIN_ODD = 1
-MAX_ODD = 5
+# MIN_ODD = 0
+# MAX_ODD = 2
 
 MIN_MARGIN = 20
 MAX_MARGIN = 35
@@ -61,8 +61,8 @@ def generate_single_iol(digit_pool: dict):
     rows = random.randint(MIN_GRID, MAX_GRID)
     cols = random.randint(MIN_GRID, MAX_GRID)
     num_cells = rows * cols
-
-    odd_k = random.randint(MIN_ODD, min(MAX_ODD, num_cells))
+    odd_k = random.choices([0, 1, 2], weights=[1, 6, 3])[0]
+    # odd_k = random.randint(MIN_ODD, min(MAX_ODD, num_cells))
 
     base_path = random.choice(paths)
 
