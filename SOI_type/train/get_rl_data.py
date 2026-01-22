@@ -53,7 +53,8 @@ def convert_dataset(
         processed.append({
             "images": image_set,
             "problem": f"{image_tokens}\n\n{prompt}",
-            "answer": f"{answer.strip()}"
+            "answer": f"{answer.strip()}",
+            "data_type": "SOI_type"
         })
 
         if max_num is not None and len(processed) >= max_num:

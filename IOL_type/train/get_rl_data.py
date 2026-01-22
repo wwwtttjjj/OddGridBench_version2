@@ -43,7 +43,8 @@ def convert_and_save_dataset(json_path: str, image_dir: str, out_path: str, num:
         processed.append({
             "images": [image_abs],
             "problem": f"\n <image> {prompt}",
-            "answer": f"{answer.strip()}"
+            "answer": f"{answer.strip()}",
+            "data_type": "IOL_type"
         })
 
         if num and len(processed) >= num:

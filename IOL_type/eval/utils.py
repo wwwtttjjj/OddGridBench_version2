@@ -97,26 +97,25 @@ def build_prompt(data):
 # )
     prompt = (
         f"The image displays a {grid_str} grid, where each cell contains an object. "
-        "The vast majority of these objects follow a consistent visual pattern, "
-        "while a few (one or more) may be anomalous. It is also possible that all objects are normal. "
-        "Anomalous objects typically deviate from the majority in terms of appearance, structure, "
+        "Most objects follow a consistent visual pattern; a small number may be anomalous, "
+        "and it is also possible that all objects are normal. "
+        "Anomalous objects deviate clearly from the majority in appearance, structure, "
         "or other perceptible visual attributes.\n\n"
 
-        "Your core task is: Identify ALL anomalous objects in the grid.\n\n"
+        "Your core task is to identify ALL anomalous objects in the grid.\n\n"
 
         "Strictly adhere to the following output rules:\n"
         "1. For each anomalous object, provide its coordinates in the format (row,column).\n"
         "   - The top-left cell is defined as (1,1).\n"
         "   - Row indices increase from top to bottom; column indices increase from left to right.\n"
-        "2. You are encouraged to perform detailed observation and analysis before providing the final answer. "
-        "However, the FINAL ANSWER must be contained within exactly one \\boxed{{}} block, "
-        "enclosing the complete list of coordinates for all anomalous objects.\n"
-        "3. Use commas to separate coordinates within the box, and do NOT include any spaces.\n"
-        "4. If no anomalous objects are found, output \\boxed{{}}.\n\n"
+        "2. You may perform observation and analysis before answering. "
+        "The FINAL ANSWER must be contained within exactly ONE \\boxed{{}} block, "
+        "which includes the complete list of coordinates for all anomalous objects.\n"
+        "3. If no anomalous objects are found, output \\boxed{{}}.\n\n"
 
-        "Example with one anomaly: ... \\boxed{{(2,2)}}\n"
-        "Example with multiple anomalies: ... \\boxed{{(2,2),(3,1)}}\n"
-        "Example with no anomalies: ... \\boxed{{}}\n"
+        "Examples:\n"
+        "- One anomaly: \\boxed{{(2,2)}}\n"
+        "- Multiple anomalies: \\boxed{{(2,2),(3,1)}}\n"
+        "- No anomalies: \\boxed{{}}\n"
     )
     return prompt
-

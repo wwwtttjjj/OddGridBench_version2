@@ -57,7 +57,8 @@ def convert_dataset(
                     "value": f"\\boxed{{{answer}}}"
                 }
             ],
-            "image": image_abs
+            "image": image_abs,
+            "data_type": "IOL_type"
         })
 
         if max_num is not None and len(processed) >= max_num:

@@ -61,7 +61,8 @@ def convert_dataset(
                     "value": f"\\boxed{{{answer}}}"
                 }
             ],
-            "image": image_set
+            "image": image_set,
+            "data_type": "SOI_type"
         })
 
         if max_num is not None and len(processed) >= max_num:

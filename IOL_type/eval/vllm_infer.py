@@ -126,7 +126,7 @@ def main():
     parser.add_argument(
         "--data_type",
         type=str,
-        default="mnist",
+        default="hanzi",
         help="icon, mnist, hanzi, VisA, MVTEC, MVTEC_loco, BTech"
     )
     

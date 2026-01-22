@@ -2,11 +2,11 @@ import random
 import math
 configs = {
     "image_size": (900, 900),
-    "grid_x" : [5, 9],
-    "grid_y" : [5, 9],
+    "grid_x" : [3, 7],
+    "grid_y" : [3, 7],
     "margin": [30, 50],
-    "block_size":[60, 80],
-    "gap": [10, 50],
+    "block_size":[200, 300],
+    "gap": [10, 20],
     # "de": [5, 20],
     # "size_ratio": [0.85, 1.15],
     # "size_ratio_min_offset": 0.05,

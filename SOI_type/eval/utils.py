@@ -81,26 +81,28 @@ def build_prompt(image_paths: list):
     #     "不存在异常图像的输出示例：……\\boxed{}\n"
     # )
     prompt = (
-    f"{image_tokens}\n\n"
-    f"You are presented with {image_count} images, labeled as image1, image2, ..., image{image_count}. "
-    f"These correspond to the 1st, 2nd, ..., {image_count}-th image in the input sequence respectively.\n\n"
+        f"{image_tokens}\n\n"
+        f"You are presented with {image_count} images, labeled image1, image2, ..., image{image_count}. "
+        f"These labels correspond to the 1st, 2nd, ..., {image_count}-th images in the input sequence respectively.\n\n"
 
-    "The objects in the vast majority of these images follow a consistent visual pattern. "
-    "A small number of images (one or more) may be anomalous, though it is also possible that all images are normal. "
-    "Anomalous images typically deviate from the majority pattern in terms of appearance, structure, "
-    "or other perceptible visual attributes.\n\n"
+        "The vast majority of these images follow a consistent visual pattern. "
+        "A small number of images (one or more) may be anomalous, though it is also possible that all images are normal. "
+        "Anomalous images deviate clearly from the majority in terms of appearance, structure, "
+        "or other perceptible visual attributes.\n\n"
 
-    "Your core task is: Identify ALL anomalous images from this set.\n\n"
+        "Your core task is to identify ALL anomalous images in this set.\n\n"
 
-    "Strictly adhere to the following output rules:\n"
-    "1. You are encouraged to perform detailed observation and comparative analysis before providing the final answer. "
-    "2. The FINAL ANSWER must be contained within exactly one \\boxed{{}} block. "
-    "Inside the box, list the labels of all anomalous images (e.g., image1, image2) separated by commas without spaces.\n"
-    "3. If no anomalous images are found, output \\boxed{{}}.\n\n"
+        "Strictly adhere to the following output rules:\n"
+        "1. You may perform observation and comparative analysis before answering.\n"
+        "2. The FINAL ANSWER must be contained within exactly ONE \\boxed{{}} block.\n"
+        "   - Inside the box, list the labels of all anomalous images (e.g., image1, image2).\n"
+        "   - Separate multiple labels using commas with no spaces.\n"
+        "3. If no anomalous images are found, output \\boxed{{}}.\n\n"
 
-    "Example with one anomaly: ... \\boxed{{image2}}\n"
-    "Example with multiple anomalies: ... \\boxed{{image2,image3}}\n"
-    "Example with no anomalies: ... \\boxed{{}}\n"
-)
+        "Examples:\n"
+        "- One anomaly: \\boxed{{image2}}\n"
+        "- Multiple anomalies: \\boxed{{image2,image3}}\n"
+        "- No anomalies: \\boxed{{}}\n"
+    )
 
     return prompt

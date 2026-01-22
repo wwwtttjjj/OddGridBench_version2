@@ -8,27 +8,37 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 from threading import Lock
 from merge_all_data import merge_iol_datasets
+from pathlib import Path
+import sys
 
-# ======================
-# 参数设置
-# ======================
-MIN_GRID = 3
-MAX_GRID = 5
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-MIN_IMG_MAX_SIDE = 400
-MAX_IMG_MAX_SIDE = 500
+from configs import MIN_GRID, MAX_GRID, odd_nums, odd_pro, MIN_IMG_MAX_SIDE, MAX_IMG_MAX_SIDE, MIN_GAP, MAX_GAP, MIN_MARGIN, MAX_MARGIN, MIN_CELL_PADDING, MAX_CELL_PADDING, BG_COLOR, MAX_CANVAS_SIZE
 
-MIN_GAP = 10
-MAX_GAP = 20
 
-MIN_MARGIN = 20
-MAX_MARGIN = 35
+# # ======================
+# # 参数设置
+# # ======================
+# MIN_GRID = 3
+# MAX_GRID = 5
 
-MIN_CELL_PADDING = 20
-MAX_CELL_PADDING = 35
+# odd_nums = [0, 1, 2]
+# odd_pro = [1,6,3]  # 偏向 1 个 odd
 
-BG_COLOR = (255, 255, 255)
-MAX_CANVAS_SIZE = 2048
+# MIN_IMG_MAX_SIDE = 400
+# MAX_IMG_MAX_SIDE = 500
+
+# MIN_GAP = 10
+# MAX_GAP = 20
+
+# MIN_MARGIN = 20
+# MAX_MARGIN = 35
+
+# MIN_CELL_PADDING = 20
+# MAX_CELL_PADDING = 35
+
+# BG_COLOR = (255, 255, 255)
+# MAX_CANVAS_SIZE = 2048
 
 
 # ======================
@@ -187,10 +197,10 @@ def generate_dataset(data_root, out_dir, samples, seed, num_threads):
             return None
 
         # odd 数量偏向 1
-        odd_k = random.choices([0, 1, 2], weights=[1, 6, 3])[0]
+        odd_k = random.choices(odd_nums, weights=odd_pro)[0]
 
         rows = random.randint(MIN_GRID, MAX_GRID)
-        cols = random.randint(MIN_GRID, MAX_GRID)
+        cols = rows
         num_cells = rows * cols
         need_normal = num_cells - odd_k
 

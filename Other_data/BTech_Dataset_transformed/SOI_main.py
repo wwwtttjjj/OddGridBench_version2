@@ -10,24 +10,10 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
 from merge_all_data import merge_soi_datasets
+import sys
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+from configs import MIN_SET_SIZE, MAX_SET_SIZE, odd_nums, odd_pro, MIN_IMG_MAX_SIDE, MAX_IMG_MAX_SIDE, MIN_GAP, MAX_GAP, MIN_MARGIN, MAX_MARGIN, MIN_CELL_PADDING, MAX_CELL_PADDING, BG_COLOR, MAX_CANVAS_SIZE
 
-# ======================
-# 参数范围（SOI 语义不变）
-# ======================
-MIN_SET_SIZE = 9
-MAX_SET_SIZE = 20
-
-MIN_CELL_MAX_SIDE = 400
-MAX_CELL_MAX_SIDE = 500
-
-MIN_ODD = 0
-MAX_ODD = 2
-
-MIN_CELL_PADDING = 0
-MAX_CELL_PADDING = 0
-
-BG_COLOR = (255, 255, 255)
-MAX_CANVAS_SIZE = 2048
 
 
 # ======================
@@ -90,7 +76,7 @@ def generate_single_soi(
         num_images = random.randint(MIN_SET_SIZE, MAX_SET_SIZE)
 
         # odd_k：0 / 2 少，1 多
-        odd_k = random.choices([0, 1, 2], weights=[1, 6, 3])[0]
+        odd_k = random.choices(odd_nums, weights=odd_pro)[0]
         odd_k = min(odd_k, num_images)
 
         # ❗ anomaly 不够 → 全局停机
@@ -114,7 +100,7 @@ def generate_single_soi(
             normal_ptr_ref[0] += 1
 
     # ---------- 图像处理（锁外） ----------
-    img_max_side = random.randint(MIN_CELL_MAX_SIDE, MAX_CELL_MAX_SIDE)
+    img_max_side = random.randint(MIN_IMG_MAX_SIDE, MAX_IMG_MAX_SIDE)
     cell_padding = random.randint(MIN_CELL_PADDING, MAX_CELL_PADDING)
 
     images = []

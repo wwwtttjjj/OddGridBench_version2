@@ -3,13 +3,15 @@
 # DATA_TYPES=(icon mnist hanzi VisA BTech MVTEC_loco MVTEC)
 source /jiangwenhao/wengtengjin/oddgrid_task/env/Internvl/bin/activate
 
-DATA_TYPES=(VisA BTech MVTEC_loco MVTEC mnist hanzi)
+# DATA_TYPES=(VisA BTech MVTEC_loco MVTEC mnist hanzi)
+DATA_TYPES=(VisA BTech MVTEC)
+
 
 MODELS=(
-  InternVL3_5-2B
-  InternVL3_5-4B
   InternVL3_5-8B
   InternVL3_5-32B
+  InternVL3_5-2B
+  InternVL3_5-4B
 )
 
 for data_type in "${DATA_TYPES[@]}"; do
