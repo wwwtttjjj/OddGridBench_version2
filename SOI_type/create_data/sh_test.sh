@@ -5,7 +5,7 @@ test_num=500
 
 # 要运行的命令列表
 commands=(
-    "python main.py --number=$test_num --data_type=test_data --max_attributes=1"
+    "python main.py --number=$test_num --data_type=test_data --max_attributes=3"
     "python create_jsonfile.py --data_type=test"
 )
 

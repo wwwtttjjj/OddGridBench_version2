@@ -392,7 +392,14 @@ def generate_odd_one_out_image(
     base_lab, base_rgb, base_shape = _generate_base_block(block_size, background_rgb)
 
     # 2) 在网格中选择 odd 位置
-    total_cells, n, odd_indices = _select_odd_positions(grid_size, random.randint(1, args.max_num_odds))
+    odd_nums = [0, 1, 2, 3]
+    # 定义对应的权重（数值越大，抽中的概率越高）
+    odd_pro = [1, 6, 3, 1] 
+
+    # 使用 random.choices 进行加权抽样
+    # k=1 表示抽一个，返回的是列表，所以用 [0] 取出值
+    chosen_odd_count = random.choices(odd_nums, weights=odd_pro, k=1)[0]
+    total_cells, n, odd_indices = _select_odd_positions(grid_size, chosen_odd_count)
 
     # 3) 为每一个 odd 生成它的类型组合
     odd_types_per_block = _generate_odd_types(n, args.max_attributes + 1)
@@ -550,7 +557,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_workers", type=int, default=16)
 
     # how many odds in each image (max)
-    parser.add_argument("--max_num_odds", type=int, default=5)
+    parser.add_argument("--max_num_odds", type=int, default=3)
     # how many attributes for each odd (max)
     parser.add_argument("--max_attributes", type=int, default=len(ALL_TYPES))
     
@@ -560,6 +567,6 @@ if __name__ == "__main__":
     args.draw_bbox = (args.data_type == "test_data")
     args.rowcol_image = (args.data_type == "test_data")
     
-    register_all_svg(f"../create_data/svg_file_{args.data_type[:-5]}")
+    register_all_svg(f"./svg_file_{args.data_type[:-5]}")
     
     build_dataset(args)

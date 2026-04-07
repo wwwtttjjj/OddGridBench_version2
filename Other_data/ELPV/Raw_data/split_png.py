@@ -2,7 +2,7 @@ import random
 import shutil
 from pathlib import Path
 
-TRAIN_RATIO = 0.8
+TRAIN_RATIO = 1.0
 SEED = 42
 
 ROOT = Path(__file__).parent          # ELPV/Raw_data
@@ -47,7 +47,7 @@ def main():
 
     for split_name, split_samples in splits.items():
         for img_rel, label in split_samples:
-            cls = "normal" if label == 1 else "anomaly"
+            cls = "Normal" if label == 0 else "Anomaly"
             src = ROOT / img_rel
             dst = OUT_ROOT / split_name / cls
             dst.mkdir(parents=True, exist_ok=True)

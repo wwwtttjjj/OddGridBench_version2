@@ -110,7 +110,15 @@ def _select_odd_positions_custom(total_count, max_odds):
     :return: odd_indices: odd图标的索引列表（0-based）
     """
     # 随机选择1~max_odds个odd
-    num_odds = random.randint(1, min(max_odds, total_count))
+    # 定义可选的奇数个数
+    odd_nums = [0, 1, 2, 3]
+    # 定义对应的权重（数值越大，抽中的概率越高）
+    odd_pro = [1, 6, 3, 1] 
+
+    # 使用 random.choices 进行加权抽样
+    # k=1 表示抽一个，返回的是列表，所以用 [0] 取出值
+    chosen_odd_count = random.choices(odd_nums, weights=odd_pro, k=1)[0]
+    num_odds = chosen_odd_count
     # 随机选择位置
     odd_indices = random.sample(range(total_count), num_odds)
     return total_count, num_odds, odd_indices
@@ -314,8 +322,8 @@ if __name__ == "__main__":
     
     # 其他参数
     parser.add_argument("--num_workers", type=int, default=16, help="并行进程数")
-    parser.add_argument("--max_num_odds", type=int, default=4, help="每组中最大odd图标数量")
-    parser.add_argument("--max_attributes", type=int, default=1, help="每个odd图标的最大属性数")
+    parser.add_argument("--max_num_odds", type=int, default=3, help="每组中最大odd图标数量")
+    parser.add_argument("--max_attributes", type=int, default=3, help="每个odd图标的最大属性数")
 
     args = parser.parse_args()
     

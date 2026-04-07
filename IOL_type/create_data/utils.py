@@ -34,7 +34,7 @@ def _select_odd_positions(grid_size, num_odds):
     total_cells = h * w
 
     # 至少 1 个，最多不超过格子总数
-    n = max(0, min(num_odds, total_cells))
+    n = max(1, min(num_odds, total_cells))
     odd_indices = np.random.choice(total_cells, size=n, replace=False).tolist()
 
     return total_cells, n, odd_indices

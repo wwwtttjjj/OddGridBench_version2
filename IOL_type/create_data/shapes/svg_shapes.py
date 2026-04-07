@@ -86,5 +86,5 @@ def register_all_svg(folder):
 
     print(f"已注册 {len(shape_registry)} 个 SVG 图案: {list(shape_registry.keys())}")
     
-# register_all_svg("/data/wengtengjin/colorsense/create_data/svg_file_test/")
+# register_all_svg("/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/IOL_type/create_data_old/svg_file_test")
 # register_all_svg("/data/wengtengjin/colorsense/create_data/svg_file_train/")

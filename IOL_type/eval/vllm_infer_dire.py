@@ -124,6 +124,7 @@ def run_vllm_http(args):
             "answer": rows_cols if rows_cols != [] else data.get("odd_rows_cols", []),
             "odd_list": odd_list,
             "odd_count": data.get("odd_count"),
+            "grid_size": str(data.get("grid_size")),
         }
         write_json(save_json_path, save_item)
 

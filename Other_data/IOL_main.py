@@ -7,20 +7,19 @@ import numpy as np
 import shutil
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from configs import odd_nums, odd_pro
 # ======================
 # 参数范围
 # ======================
 MIN_GRID = 3
-MAX_GRID = 5
+MAX_GRID = 9
 
-MIN_CELL_SIZE = 40
-MAX_CELL_SIZE = 50
+MIN_CELL_SIZE = 100
+MAX_CELL_SIZE = 150
 
 MIN_GAP = 10
 MAX_GAP = 30
 
-# MIN_ODD = 0
-# MAX_ODD = 2
 
 MIN_MARGIN = 20
 MAX_MARGIN = 35
@@ -60,8 +59,7 @@ def generate_single_iol(digit_pool: dict):
     rows = random.randint(MIN_GRID, MAX_GRID)
     cols = random.randint(MIN_GRID, MAX_GRID)
     num_cells = rows * cols
-    odd_k = random.choices([0, 1, 2], weights=[1, 6, 3])[0]
-    # odd_k = random.randint(MIN_ODD, min(MAX_ODD, num_cells))
+    odd_k = random.choices(odd_nums, weights=odd_pro)[0]
 
     base_path = random.choice(paths)
 
@@ -124,7 +122,7 @@ def generate_single_iol(digit_pool: dict):
         "gap": gap,
         "margin": margin,
         "base_image": base_path.name,
-        "odd_images": [p.name for p in odd_paths],
+        "odd_images": [p.name for p in odd_paths]
     }
     # print(digit)
 
@@ -164,6 +162,7 @@ def generate_dataset(
         W, H = img.size
         meta["image"] = name
         meta["image_size"] = [W, H]
+        meta["source"] = str(png_root.parent)
         return meta
 
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
