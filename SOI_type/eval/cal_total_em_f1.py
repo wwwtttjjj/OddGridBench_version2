@@ -8,10 +8,6 @@ from pathlib import Path
 # Normalize GT: answer -> List[int]
 # =========================
 def normalize_gt(answer):
-    """
-    []        -> []
-    [2, 5]    -> [2, 5]
-    """
     if not answer:
         return []
     return [int(x) for x in answer]

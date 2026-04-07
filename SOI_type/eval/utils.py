@@ -22,21 +22,18 @@ def extract_answer_from_response(response_text):
     if response_text is None:
         return ""
 
-    m = re.search(r'\\boxed\{([^}]*)\}', response_text)
+    m = re.search(r'\\boxed\s*\{+([^}]*)\}+', response_text)
+    
     if not m:
-        # ❌ 没有 boxed，格式错误
         return ""
 
-    content = m.group(1).strip()
+    content = m.group(1).replace('{', '').replace('}', '').strip()
 
-    # ✅ 合法：无异常图像
     if content == "":
         return []
 
-    # 提取所有合法 imageX
     images = _IMAGE_PATTERN.findall(content)
 
-    # boxed 里有内容，但没有合法 imageX → 格式错误
     if not images:
         return ""
 

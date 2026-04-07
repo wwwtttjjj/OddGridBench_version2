@@ -124,6 +124,7 @@ def run_vllm_http(args):
             "extract_answer": extract_answer,
             "answer": data.get("odd_indices", []),
             "odd_count": data.get("num_odds"),
+            "total_images": data.get("total_icons"),
         }
         write_json(save_json_path, save_item)
 

@@ -73,7 +73,17 @@ def eval_json_file(json_path: Path):
     for sample in data:
         gt_set = normalize_gt(sample.get("answer", []))
         pred_set = normalize_pred(sample.get("extract_answer", ""))
+        
+        # --- 修改部分：支持字符串格式的 grid_size ---
         grid_size = sample.get("grid_size", [3, 3])
+        if isinstance(grid_size, str):
+            try:
+                # 将 "[3, 3]" 转换为 [3, 3]
+                grid_size = json.loads(grid_size)
+            except:
+                # 如果解析失败，回退到默认值
+                grid_size = [3, 3]
+        # ------------------------------------------
 
         tp, fp, tn, fn = compute_cell_confusion_matrix(pred_set, gt_set, grid_size)
         
@@ -82,7 +92,7 @@ def eval_json_file(json_path: Path):
         total_tn += tn
         total_fn += fn
 
-    # 计算最终指标
+    # ... 后面的计算逻辑保持不变 ...
     total_cells = total_tp + total_fp + total_tn + total_fn
     acc = (total_tp + total_tn) / total_cells if total_cells > 0 else 0
     precision = total_tp / (total_tp + total_fp) if (total_tp + total_fp) > 0 else 0
@@ -92,14 +102,8 @@ def eval_json_file(json_path: Path):
     return {
         "images": img_count,
         "total_cells": total_cells,
-        "tp": total_tp,
-        "fp": total_fp,
-        "tn": total_tn,
-        "fn": total_fn,
-        "acc": acc,
-        "precision": precision,
-        "recall": recall,
-        "f1": f1
+        "tp": total_tp, "fp": total_fp, "tn": total_tn, "fn": total_fn,
+        "acc": acc, "precision": precision, "recall": recall, "f1": f1
     }
 
 def eval_all(json_dir_list, out_csv):
