@@ -148,6 +148,11 @@ if __name__ == "__main__":
     my_dirs = [
         "VisA_output", 
         "BTech_output",
-        "MVTEC_output"
+        "MVTEC_output",
+        "BTech_output",
+        "ELPV_output",
+        "hanzi_output",
+        "icon_output",
+        "mnist_output"
     ]
     run_soi_evaluation(my_dirs)

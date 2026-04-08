@@ -144,13 +144,14 @@ def eval_json_dir(json_dir: str, out_csv: str):
 # =========================
 if __name__ == "__main__":
     json_dirs = [
-        # "mnist_output/",
-        # "hanzi_output/",
-        # "icon_output/",
-        # "BTech_output/",
-        # "MVTEC_loco_output/",
-        # "MVTEC_output/",
-        # "VisA_output/",
+        "mnist_output/",
+        "hanzi_output/",
+        "icon_output/",
+        "BTech_output/",
+        "MVTEC_loco_output/",
+        "ELPV_output/", 
+        "MVTEC_output/",
+        "VisA_output/",
     ]
 
     out_root = Path("results_total")

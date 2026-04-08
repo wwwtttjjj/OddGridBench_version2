@@ -146,7 +146,7 @@ def eval_all(json_dir_list, out_csv):
 # =========================
 if __name__ == "__main__":
     # 1. 定义你要处理的目录列表
-    target_dirs = ["VisA_output", "MVTEC_output", "BTech_output"] 
+    target_dirs = ["VisA_output", "MVTEC_output", "BTech_output", "ELPV_output", "hanzi_output", "icon_output", "mnist_output", "MVTEC_loco_output"]
     
     # 2. 定义存放结果的总文件夹
     out_root = Path("results_single")
