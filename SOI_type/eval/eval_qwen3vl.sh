@@ -4,7 +4,9 @@
 # source /jiangwenhao/wengtengjin/oddgrid_task/env/easyr1/bin/activate
 # DATA_TYPES=(VisA BTech MVTEC_loco MVTEC mnist hanzi)
 
-DATA_TYPES=(VisA BTech MVTEC mnist hanzi ELPV icon)
+# DATA_TYPES=(VisA BTech MVTEC mnist hanzi ELPV icon)
+DATA_TYPES=(VisA BTech MVTEC ELPV)
+
 
 MODELS=(
   Qwen3-VL-4B-Instruct

@@ -286,19 +286,19 @@ def main(DATA_NAME, IMAGE_DIR):
 # ======================
 if __name__ == "__main__":
     
-    # DATA_NAME = "BTech_Dataset_transformed"
-    # IMAGE_DIR = "manual_images/"
-    # main(DATA_NAME, IMAGE_DIR)
+    DATA_NAME = "BTech_Dataset_transformed"
+    IMAGE_DIR = "manual_images/"
+    main(DATA_NAME, IMAGE_DIR)
     
-    # DATA_NAME = "mvtec"
-    # IMAGE_DIR = "A_cropped_images/"
-    # main(DATA_NAME, IMAGE_DIR)
+    DATA_NAME = "mvtec"
+    IMAGE_DIR = "A_cropped_images/"
+    main(DATA_NAME, IMAGE_DIR)
     
     DATA_NAME = "VisA"
     IMAGE_DIR = "A_cropped_images/"
     main(DATA_NAME, IMAGE_DIR)
     
-    # DATA_NAME = "ELPV"
-    # IMAGE_DIR = "ELPV_split/"
+    DATA_NAME = "ELPV"
+    IMAGE_DIR = "ELPV_split/"
     
     main(DATA_NAME, IMAGE_DIR)

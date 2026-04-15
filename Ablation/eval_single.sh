@@ -5,7 +5,7 @@
 
 source /nfsdata4/wengtengjin/oddgrid_task/env/easyr1/bin/activate
 # DATA_TYPES=(VisA BTech MVTEC_loco MVTEC ELPV mnist hanzi icon)
-DATA_TYPES=(VisA BTech MVTEC ELPV)
+DATA_TYPES=(VisA BTech_Dataset_transformed mvtec ELPV)
 
 
 MODELS=(
@@ -15,12 +15,13 @@ MODELS=(
   Qwen3-VL-2B-Instruct
 )
 
+
 for data_type in "${DATA_TYPES[@]}"; do
   for model in "${MODELS[@]}"; do
-    echo "Running model=${model}, data=${data_type}"
+    echo "Running model_name=${model}, dataset=${data_type}"
     python vllm_infer_dire.py \
       --model_name "${model}" \
-      --data_type "${data_type}"
+      --dataset "${data_type}"
   done
 done
 

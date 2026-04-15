@@ -8,4 +8,6 @@ MODEL_PATH = os.path.join(ROOT_DIR, "models")
 
 # MODEL_PATH = r"/nfsdata4/wengtengjin/oddgrid_task/models/Qwen3-VL-8B-Instruct"
 BASE_DATA_DIR = "./single_data"
-SAVE_DIR = "./results"  # 保存目录
+SAVE_DIR = "./results"  #
+
+EXAMPLE_DIR = "./examples"  # 正样本和负样本
