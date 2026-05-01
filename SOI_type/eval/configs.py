@@ -28,6 +28,9 @@ def get_configs(args):
     elif args.data_type == "ELPV":
         image_dir = "../../Other_data/ELPV/soi_test_data/images"
         json_path = "../../Other_data/ELPV/soi_test_data/soi_test_data.json"
+    elif args.data_type == "nanfang":
+        image_dir = "../../Abaltion_data/Nanfang/soi_test_data/images"
+        json_path = "../../Abaltion_data/Nanfang/soi_test_data/soi_test_data.json"
 
     # 输出路径
     Result_root = args.data_type + "_output/"

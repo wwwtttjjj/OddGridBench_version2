@@ -19,7 +19,7 @@ def get_configs(args):
     elif args.data_type == "VisA":
         image_dir = "../Other_data/VisA/soi_test_data/images"
         json_path = "../Other_data/VisA/soi_test_data/soi_test_data.json"
-    elif args.data_type == "BTech":
+    elif args.data_type == "BTech_Dataset_transformed":
         image_dir = "../Other_data/BTech_Dataset_transformed/soi_test_data/images"
         json_path = "../Other_data/BTech_Dataset_transformed/soi_test_data/soi_test_data.json"
     elif args.data_type == "MVTEC":

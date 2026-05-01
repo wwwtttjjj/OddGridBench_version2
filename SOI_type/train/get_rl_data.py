@@ -47,12 +47,11 @@ def convert_dataset(
         image_abs = os.path.join(image_root, os.path.basename(image))
         image_set = [os.path.join(image_abs, f"{i}.png") for i in range(1, item.get("total_icons") + 1)]
         num_images = len(image_set)
-        image_tokens = "\n".join([f"<image> image{i}" for i in range(1, num_images + 1)])
         # ✅ 构造 prompt
         prompt = build_prompt(image_set)
         processed.append({
             "images": image_set,
-            "problem": f"{image_tokens}\n\n{prompt}",
+            "problem": f"{prompt}",
             "answer": f"{answer.strip()}",
             "data_type": "SOI_type"
         })
@@ -69,10 +68,10 @@ def convert_dataset(
 
 if __name__ == "__main__":
     train_json_path = "../create_data/train_data.json"
-    test_json_path  = "../create_data/test_data.json"
+    test_json_path  = "../create_data/val_data.json"
 
     train_image_dir = "../../SOI_type/create_data/train_data/image"
-    test_image_dir  = "../../SOI_type/create_data/test_data/image"
+    test_image_dir  = "../../SOI_type/create_data/val_data/image"
 
     train_out = "./train_rl_data.jsonl"
     test_out  = "./test_rl_data.jsonl"

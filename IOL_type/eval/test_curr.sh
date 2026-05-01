@@ -17,7 +17,7 @@ MODELS=(
 for data_type in "${DATA_TYPES[@]}"; do
   for model in "${MODELS[@]}"; do
     echo "Running model=${model}, data=${data_type}"
-    python vllm_infer_dire.py \
+    python vllm_infer_d.py \
       --model_name "${model}" \
       --data_type "${data_type}"
   done

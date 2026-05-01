@@ -28,7 +28,8 @@ def copy_random_images(src_root, dst_root):
             # 6. 执行复制
             src_path = os.path.join(root, random_img)
             dst_path = os.path.join(target_dir, new_name)
-            
+            if os.path.exists(dst_path):
+                continue
             shutil.copy2(src_path, dst_path)
             print(f"已处理: {root} -> {new_name}")
 

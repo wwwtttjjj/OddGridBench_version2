@@ -1,0 +1,28 @@
+from PIL import Image
+from pathlib import Path
+
+MIN_GRID = 3
+MAX_GRID = 5
+
+
+odd_nums = [0, 1, 2]
+odd_pro = [1,6,1]  # 偏向 1 个 odd
+
+MIN_IMG_MAX_SIDE = 350
+MAX_IMG_MAX_SIDE = 600
+
+MIN_GAP = 10
+MAX_GAP = 20
+
+MIN_MARGIN = 20
+MAX_MARGIN = 35
+
+MIN_CELL_PADDING = 20
+MAX_CELL_PADDING = 35
+
+BG_COLOR = (255, 255, 255)
+MAX_CANVAS_SIZE = 2048
+
+
+MIN_SET_SIZE = 5
+MAX_SET_SIZE = 8

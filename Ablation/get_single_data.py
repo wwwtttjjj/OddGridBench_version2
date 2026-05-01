@@ -7,7 +7,7 @@ from pathlib import Path
 # 配置参数
 # ======================
 ONLY_ANOMALY = False    
-CLEAR_TARGET = True   
+CLEAR_TARGET = False   
 
 def extract_original_images_and_record(source_data, json_path, output_root, data_type):
     """
@@ -78,6 +78,7 @@ def extract_original_images_and_record(source_data, json_path, output_root, data
             local_metadata[meta_key]["resize_scale"].append(scale)
 
             # --- 物理拷贝 ---
+            print(f"   >> 处理图片: {src_file} | 目标: {dst_file} | 异常: {is_anomaly}")
             if src_file.exists():
                 if not dst_file.exists():
                     dst_dir.mkdir(parents=True, exist_ok=True)
@@ -97,7 +98,7 @@ def main(DATA_NAME, SOURCE_ROOT="../Other_data", TARGET_ROOT="single_data"):
         ("iol", SOURCE_ROOT / DATA_NAME / "A_iol_type_data" / "all_iol_combined_metadata.json"),
         ("soi", SOURCE_ROOT / DATA_NAME / "A_soi_type_data" / "all_soi_combined_metadata.json"),
     ]
-
+    print(tasks)
     for d_type, json_path in tasks:
         # 1. 提取并拷贝
         meta, c, ac = extract_original_images_and_record(
@@ -106,13 +107,12 @@ def main(DATA_NAME, SOURCE_ROOT="../Other_data", TARGET_ROOT="single_data"):
             output_root=TARGET_DIR, 
             data_type=d_type
         )
-        
         # 2. 如果有数据，则保存对应的 JSON 文件
         if meta:
             # 命名规则：dataset_name_type.json (例如 VisA_iol.json)
             out_json_name = f"{DATA_NAME}_{d_type}.json"
             out_json_path = TARGET_DIR / out_json_name
-            
+            print(f"   >> 处理完成: {out_json_name} | 拷贝了 {c} 张图片，其中异常 {ac} 张")
             with open(out_json_path, 'w', encoding='utf-8') as f:
                 json.dump(meta, f, indent=4, ensure_ascii=False)
             print(f"   >> 已生成 JSON: {out_json_name} (拷贝 {c} 张)")
@@ -128,5 +128,7 @@ if __name__ == "__main__":
     
     TARGET_PATH.mkdir(parents=True, exist_ok=True)
 
-    for ds in datasets:
-        main(ds)
+    # for ds in datasets:
+    #     main(ds)
+    main("Nanfang", SOURCE_ROOT="../Ablation_data")  # 处理 Ablation 数据集
+        

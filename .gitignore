@@ -30,3 +30,9 @@
 *.mp4
 *.wandb
 *.log
+*.jpg
+*.jpeg
+*.txt
+*.svg
+*.log
+*.pt

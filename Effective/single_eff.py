@@ -9,21 +9,17 @@ from tqdm import tqdm
 from pathlib import Path
 import re
 
-import os
-# models_dir = "../models/"
+# ================= 基础配置 =================
 max_new_tokens = 2048
-
 CUR_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(CUR_DIR, "../../"))
 MODEL_PATH = os.path.join(ROOT_DIR, "models")
-
-# MODEL_PATH = r"/nfsdata4/wengtengjin/oddgrid_task/models/Qwen3-VL-8B-Instruct"
 BASE_DATA_DIR = "../Ablation/single_data"
-SAVE_DIR = "./single_results"  # 保存目录
-
-# ================= 配置区 =================
+SAVE_DIR_BASE = "./single_results"  # 结果保存根目录
+EXAMPLE_DIR = "../Ablation/examples"         # 示例图片根目录
 API_URL = "http://localhost:8081/v1/chat/completions"
-# =========================================
+
+# ================= 工具函数 =================
 
 def extract_answer(predict_answer):
     match = re.search(r'box\{(Yes|No)\}', predict_answer, re.IGNORECASE)
@@ -31,35 +27,93 @@ def extract_answer(predict_answer):
         return match.group(1).capitalize()
     return None
 
-def build_custom_prompt():
-    return f"Please analyze the image first, then determine if there are any defects and output the final answer as box{{Yes}} or box{{No}}."
-
 def encode_image(image_path):
+    if not image_path or not os.path.exists(image_path):
+        return None
     with open(image_path, "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
+def find_example_image(original_path, target_type="Normal"):
+    """将推理路径映射到 example 路径"""
+    if not original_path: return None
+    # 统一路径分隔符并分割
+    parts = original_path.replace("\\", "/").split('/')
+    
+    new_parts = []
+    # 从路径中寻找类别标识并替换
+    found_type = False
+    for p in parts:
+        if p.lower() in ["normal", "anomaly", "abnormal"]:
+            new_parts.append(target_type)
+            found_type = True
+        else:
+            new_parts.append(p)
+    
+    if not found_type: return None
 
-def call_vllm_api(prompt, img_path, model_name):
-    image_base64 = encode_image(img_path)
+    # 构建目标目录 (去掉文件名)
+    sub_dir = "/".join(new_parts[:-1])
+    # 移除路径中可能存在的相对路径前缀以匹配 example 结构
+    sub_dir = sub_dir.replace("../Ablation/single_data/", "")
+    
+    target_dir = os.path.join(EXAMPLE_DIR, sub_dir)
+    
+    extensions = ['.png', '.jpg', '.jpeg', '.PNG', '.JPG']
+    for ext in extensions:
+        potential_path = os.path.join(target_dir, f"example{ext}")
+        if os.path.exists(potential_path):
+            return potential_path
+    return None
+
+def build_multimodal_prompt(mode, img_path, current_img_base64):
+    """构建多模态对话消息列表"""
+    messages = []
+    
+    # 1. 正常参考
+    if mode in ["one-example", "two-examples"]:
+        pos_path = find_example_image(img_path, target_type="Normal")
+        pos_b64 = encode_image(pos_path)
+        if pos_b64:
+            messages.append({"role": "user", "content": [
+                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{pos_b64}"}},
+                {"type": "text", "text": "This is a [Standard Normal Sample] without any defects. It serves as your quality baseline."}
+            ]})
+            messages.append({"role": "assistant", "content": "Understood. I have analyzed the normal sample and will use it as a reference."})
+
+    # 2. 异常参考
+    if mode == "two-examples":
+        neg_path = find_example_image(img_path, target_type="Anomaly")
+        neg_b64 = encode_image(neg_path)
+        if neg_b64:
+            messages.append({"role": "user", "content": [
+                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{neg_b64}"}},
+                {"type": "text", "text": "This is an [Anomalous Sample] that contains defects. Please note these irregular features."}
+            ]})
+            messages.append({"role": "assistant", "content": "Understood. I have identified the defective features for comparison."})
+
+    # 3. 最终指令
+    if mode == "zero-shot":
+        instruction = "Please analyze the visual features of this image first, determine if there are any defects, and finally output the answer as box{Yes} or box{No}."
+    elif mode == "one-example":
+        instruction = "Please analyze the current image first. Compared to the [Standard Normal Sample] provided earlier, does this image show any deviations or defects? Based on your analysis, output the final answer as box{Yes} or box{No}."
+    else: # two-examples
+        instruction = "Please analyze the current image first. By comparing it with both the [Standard Normal Sample] and the [Anomalous Sample] above, determine if this image is defective. Based on your comparison, output the final answer as box{Yes} or box{No}."
+
+    messages.append({
+        "role": "user",
+        "content": [
+            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{current_img_base64}"}},
+            {"type": "text", "text": instruction}
+        ]
+    })
+    return messages
+
+def call_vllm_api(messages, model_name):
+    """通过 API 发送消息列表"""
     full_model_path = os.path.join(MODEL_PATH, model_name)
-
     payload = {
         "model": full_model_path,
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "image_url",
-                        "image_url": {"url": f"data:image/png;base64,{image_base64}"}
-                    },
-                    {
-                        "type": "text",
-                        "text": prompt.strip()
-                    }
-                ]
-            }
-        ],
+        "messages": messages,
         "temperature": 0.0,
         "max_tokens": max_new_tokens,
     }
@@ -70,19 +124,22 @@ def call_vllm_api(prompt, img_path, model_name):
         data = response.json()
         return data["choices"][0]["message"]["content"]
     except Exception as e:
-        print(f"\n[ERROR] API 请求失败 {os.path.basename(img_path)}: {e}")
+        print(f"\n[ERROR] API 请求失败: {e}")
         return None
 
+# ================= 主推理函数 =================
 
-def run_inference(data_type, dataset_name, model_name, sample_num):
-    # ===== 全局计时 =====
+def run_inference(data_type, dataset_name, model_name, sample_num, mode):
     global_start = time.time()
 
-    # ===== 路径 =====
+    # 根据 mode 区分保存路径
+    current_save_dir = f"{SAVE_DIR_BASE}_{mode}"
+    if not os.path.exists(current_save_dir):
+        os.makedirs(current_save_dir)
+
     json_input_path = os.path.join(BASE_DATA_DIR, f"{dataset_name}_{data_type}.json")
-    print(json_input_path)
     safe_model_name = model_name.replace('/', '_')
-    save_path = f"{SAVE_DIR}/{data_type}_{dataset_name}_{safe_model_name}.json"
+    save_path = os.path.join(current_save_dir, f"{data_type}_{dataset_name}_{safe_model_name}.json")
 
     if not os.path.exists(json_input_path):
         print(f"[ERROR] 找不到索引文件: {json_input_path}")
@@ -91,7 +148,6 @@ def run_inference(data_type, dataset_name, model_name, sample_num):
     with open(json_input_path, "r", encoding="utf-8") as f:
         image_metadata = json.load(f)
 
-    # ===== 断点续传 =====
     all_results = []
     processed_paths = set()
 
@@ -101,57 +157,44 @@ def run_inference(data_type, dataset_name, model_name, sample_num):
                 all_results = json.load(f)
                 processed_paths = {item["path"] for item in all_results}
                 print(f"[INFO] 载入进度，跳过已处理 {len(processed_paths)} 条")
-        except Exception as e:
-            print(f"[WARNING] 读取输出 JSON 失败: {e}")
+        except: pass
 
-    # ===== 过滤有效数据 =====
+    # 过滤与路径修复
     valid_items = []
     for k, v in image_metadata.items():
+        # 保持你原始代码中的路径拼接逻辑
         img_path = "../Ablation/" + v.get("physical_path")
         label = v.get("label", "").lower()
 
-        if not img_path or not os.path.exists(img_path):
+        if not os.path.exists(img_path) or label not in ["anomaly", "normal"] or img_path in processed_paths:
             continue
-        if label not in ["anomaly", "normal"]:
-            continue
-        if img_path in processed_paths:
-            continue
-
         valid_items.append((k, v))
 
-    print(f"[INFO] 可用样本数: {len(valid_items)}")
-
-    # ===== 随机采样 =====
     random.seed(42)
     if len(valid_items) > sample_num:
         valid_items = random.sample(valid_items, sample_num)
 
-    print(f"[INFO] 实际采样数: {len(valid_items)}")
-
-    # ===== 推理 =====
-    print(f"\n[START] {dataset_name} | {data_type} | {model_name}")
+    print(f"\n[START] Mode: {mode} | {dataset_name} | {model_name} | Samples: {len(valid_items)}")
 
     time_list = []
-
     for meta_key, info in tqdm(valid_items):
         img_path = "../Ablation/" + info["physical_path"]
+        
+        # 构建当前图片的 Base64
+        current_b64 = encode_image(img_path)
+        if not current_b64: continue
 
-        prompt = build_custom_prompt()
+        # 根据模式构建多图消息体
+        messages = build_multimodal_prompt(mode, img_path, current_b64)
 
-        # ===== 单条计时 =====
         start_time = time.time()
+        predict_answer = call_vllm_api(messages, model_name)
+        elapsed_time = time.time() - start_time
 
-        predict_answer = call_vllm_api(prompt, img_path, model_name)
-
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-
-        if predict_answer is None:
-            continue
+        if predict_answer is None: continue
 
         extract_ans = extract_answer(predict_answer)
 
-        # ===== 记录结果 =====
         res_item = {
             "filename": info.get("filename"),
             "path": img_path,
@@ -159,14 +202,10 @@ def run_inference(data_type, dataset_name, model_name, sample_num):
             "predict": predict_answer,
             "extract_answer": extract_ans,
             "gt": "no" if info.get("label") == "normal" else "yes",
-            "data_type": data_type,
+            "mode": mode,
             "dataset_name": dataset_name,
             "model_name": model_name,
-
-            # 🔥 核心新增
             "inference_time": elapsed_time,
-
-            # 原字段
             "resize_scale": info.get("resize_scale"),
             "original_count": info.get("count")
         }
@@ -174,38 +213,23 @@ def run_inference(data_type, dataset_name, model_name, sample_num):
         all_results.append(res_item)
         time_list.append(elapsed_time)
 
-        # ===== 实时保存 =====
         with open(save_path, "w", encoding="utf-8") as f:
             json.dump(all_results, f, ensure_ascii=False, indent=4)
 
-        processed_paths.add(img_path)
-
-    # ===== 全局统计 =====
+    # 统计逻辑保持不变...
     total_time = time.time() - global_start
-
-    if len(time_list) > 0:
-        avg_time = sum(time_list) / len(time_list)
-        p50 = sorted(time_list)[len(time_list)//2]
-        p95 = sorted(time_list)[int(len(time_list)*0.95)]
-
-        print("\n===== 性能统计 =====")
-        print(f"样本数: {len(time_list)}")
-        print(f"平均耗时: {avg_time:.3f}s")
-        print(f"P50: {p50:.3f}s")
-        print(f"P95: {p95:.3f}s")
-        print(f"总耗时: {total_time:.2f}s")
-
-    print(f"\n[SUCCESS] 保存路径: {save_path}")
-
+    if time_list:
+        print(f"\n[DONE] Avg: {sum(time_list)/len(time_list):.3f}s | Total: {total_time:.2f}s")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--type", type=str, default="iol")
     parser.add_argument("--dataset", type=str, default="mvtec")
-    parser.add_argument("--model_name", type=str, default="Qwen3-VL-8B-Instruct")
-
-    # 🔥 新增参数
+    parser.add_argument("--model_name", type=str, default="Qwen3-VL-32B-Instruct")
     parser.add_argument("--sample_num", type=int, default=100)
+    # 新增模式参数
+    parser.add_argument("--mode", type=str, default="zero-shot", 
+                        choices=["zero-shot", "one-example", "two-examples"])
 
     args = parser.parse_args()
 
@@ -213,5 +237,6 @@ if __name__ == "__main__":
         args.type,
         args.dataset,
         args.model_name,
-        args.sample_num
+        args.sample_num,
+        args.mode
     )

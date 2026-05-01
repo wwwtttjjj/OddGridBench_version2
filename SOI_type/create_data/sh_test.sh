@@ -1,19 +1,22 @@
 #!/bin/bash
-set -e  # 出错就停止执行
-# source /nfsdata4/wengtengjin/oddgrid_task/env/easyr1/bin/activate
-test_num=500
+set -e 
 
-# 要运行的命令列表
+# 定义参数
+test_num=500
+val_num=500
+
+# 将所有需要运行的命令放入一个数组
 commands=(
     "python main.py --number=$test_num --data_type=test_data --max_attributes=3"
     "python create_jsonfile.py --data_type=test"
+    "python main.py --number=$val_num --data_type=val_data --max_attributes=3"
+    "python create_jsonfile.py --data_type=val"
 )
 
 # 遍历执行
 for cmd in "${commands[@]}"; do
-    echo ">>> Running: $cmd ..."
+    echo ">>> $(date '+%Y-%m-%d %H:%M:%S') Running: $cmd ..."
     eval $cmd
     echo ">>> Finished: $cmd"
     echo "-----------------------"
 done
-# nohup bash sh_test.sh > test.log 2>&1 &

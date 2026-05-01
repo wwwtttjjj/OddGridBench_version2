@@ -10,7 +10,6 @@ from utils import *
 from PIL import Image
 from io import BytesIO
 
-TARGET_SIZE = 112  # 你想要的正方形边长
 
 # 可以按需改成环境变量
 API_URL = "http://localhost:8081/v1/chat/completions"
@@ -23,8 +22,8 @@ def call_vllm_server(prompt, image_paths, model_path):
     for img_path in image_paths:
         img = Image.open(img_path).convert("RGB")
 
-        # 选插值：自然图像用 BICUBIC；像 MNIST/字形这种硬边界可用 NEAREST
-        img = img.resize((TARGET_SIZE, TARGET_SIZE), resample=Image.BICUBIC)
+        # # 选插值：自然图像用 BICUBIC；像 MNIST/字形这种硬边界可用 NEAREST
+        # img = img.resize((TARGET_SIZE, TARGET_SIZE), resample=Image.BICUBIC)
 
         buf = BytesIO()
         img.save(buf, format="PNG")
@@ -125,7 +124,7 @@ def run_vllm_http(args):
 
 def main():
     parser = argparse.ArgumentParser(description="Run multimodal inference via vLLM Python API")
-    parser.add_argument("--model_name", type=str, default="Qwen3-VL-32B-Instruct")
+    parser.add_argument("--model_name", type=str, default="Qwen3-VL-4B-Instruct")
     parser.add_argument(
         "--image_type",
         type=str,
@@ -135,8 +134,8 @@ def main():
     parser.add_argument(
         "--data_type",
         type=str,
-        default="VisA",
-        help="icon, mnist, hanzi, VisA, BTech, MVTEC"
+        default="nanfang",
+        help="icon, mnist, hanzi, VisA, BTech, MVTEC, nanfang"
     )
 
     args = parser.parse_args()

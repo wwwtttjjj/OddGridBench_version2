@@ -172,14 +172,14 @@ def process_one_image_name(image_path, box_mode="qwen1000", padding=0):
 # ======================
 def main():
     image_name_list = [
-        "cashew",
-        "chewinggum",
-        "fryum",
+        # "cashew",
+        # "chewinggum",
+        # "fryum",
         "pcb1",
-        "pcb2",
-        "pipe_fryum",
-        "pcb3",
-        "pcb4",
+        # "pcb2",
+        # "pipe_fryum",
+        # "pcb3",
+        # "pcb4",
     ]
     image_path_list = ["manual_images/" + name for name in image_name_list]
     

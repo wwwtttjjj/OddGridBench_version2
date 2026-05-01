@@ -1,8 +1,9 @@
 #!/bin/bash
-export CUDA_VISIBLE_DEVICES=2,3,5,6
+export CUDA_VISIBLE_DEVICES=4,5,6,7
 source /nfsdata4/wengtengjin/oddgrid_task/env/easyr1/bin/activate
 
 
 
 
-bash train_configs/qwen3_vl_2b_SOI_grpo.sh
+bash train_configs/qwen3_vl_4b_Total_grpo.sh
+# python scripts/model_merger.py --local_dir

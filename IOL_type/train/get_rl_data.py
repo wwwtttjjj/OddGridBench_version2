@@ -65,8 +65,8 @@ if __name__ == "__main__":
     train_img_dir = "../../IOL_type/create_data/train_data/image"
     train_out = "./train_rl_data.jsonl"
 
-    val_json = "../create_data/test_data.json"
-    val_img_dir = "../../IOL_type/create_data/test_data/image"
+    val_json = "../create_data/val_data.json"
+    val_img_dir = "../../IOL_type/create_data/val_data/image"
     val_out = "./test_rl_data.jsonl"
     
     

@@ -94,4 +94,7 @@ def calculate_metrics_to_csv(folder_path, output_csv):
         print(f"写入出错: {e}")
 
 # calculate_metrics_to_csv('./results_old', 'model_performance_report_old.csv')
-calculate_metrics_to_csv('./results', 'model_performance_report.csv')
+calculate_metrics_to_csv('./results_one-example', 'final_results/model_performance_report_one-example.csv')
+calculate_metrics_to_csv('./results_two-examples', 'final_results/model_performance_report_two-examples.csv')
+calculate_metrics_to_csv('./results_zero-shot', 'final_results/model_performance_report_zero-shot.csv')
+

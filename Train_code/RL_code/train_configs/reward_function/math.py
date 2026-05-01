@@ -22,6 +22,40 @@ import re
 import ast
 import math
 
+
+def extract_boxed_content_odd(text: str) -> str:
+    """
+    支持多层嵌套提取，例如 \boxed{{(1,2)}} -> (1,2)
+    如果未提取到，返回 "None"
+    """
+    start_str = r"\boxed{"
+    start_pos = text.rfind(start_str)
+    if start_pos == -1:
+        return "None"
+    
+    # 找到第一个左括号的位置开始截取
+    brace_start = start_pos + len(start_str) - 1
+    content = text[brace_start:]
+    
+    depth = 0
+    end_pos = -1
+    for i, char in enumerate(content):
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+        if depth == 0:
+            end_pos = i
+            break
+            
+    if end_pos != -1:
+        res = content[1:end_pos].strip()
+        # 递归剥壳，处理 {{...}} 这种多层括号
+        while res.startswith("{") and res.endswith("}"):
+            res = res[1:-1].strip()
+        return res
+    return "None"
+
 def parse_row_col(text: str):
     """
     从字符串结尾提取 Row 和 Column。
@@ -88,19 +122,71 @@ def accuracy_oddgrid_reward(gridsize: str, response: str, ground_truth: str, sig
 #     format_match = re.fullmatch(pattern, response)
 #     return 1.0 if format_match else 0.0
 
-def accuracy_reward(response: str, ground_truth: str) -> float:
-    answer = extract_boxed_content(response)
-    return 1.0 if grade_answer(answer, ground_truth) else 0.0
+# def accuracy_reward(response: str, ground_truth: str) -> float:
+#     answer = extract_boxed_content(response)
+#     return 1.0 if grade_answer(answer, ground_truth) else 0.0
+
+def parse_to_set(raw_str):
+    """
+    将提取的字符串解析为元素集合。
+    使用正则保护坐标 (1,2) 不被 split(',') 拆散。
+    """
+    if not raw_str or raw_str.strip() in ["", "None", "{}"]:
+        return set()
+    
+    # 统一英文逗号
+    raw_str = raw_str.replace('，', ',')
+    
+    # 正则逻辑：匹配坐标 (r,c) OR 标签 imageN OR 连续非空非逗号字符
+    pattern = r'(\(\d+,\d+\)|image\d+|[^,\s]+)'
+    items = re.findall(pattern, raw_str)
+    
+    return {item.strip() for item in items if item.strip()}
+
+def accuracy_reward(prediction_text, ground_truth_text):
+    """
+    计算 Exact Match (EM): 全对返回 1，否则返回 0
+    """
+    pred_content = extract_boxed_content_odd(prediction_text)
+    # 假设 GT 为直接字符串，不带 \boxed
+    pred_set = parse_to_set(pred_content)
+    gt_set = parse_to_set(ground_truth_text)
+    
+    return 1 if pred_set == gt_set else 0
+
+def f1_reward(prediction_text, ground_truth_text):
+    """
+    计算 F1 Score: 衡量预测集合与真值集合的重合度
+    """
+    pred_content = extract_boxed_content_odd(prediction_text)
+    pred_set = parse_to_set(pred_content)
+    gt_set = parse_to_set(ground_truth_text)
+    
+    # 两者均为空（预测无异常且实际无异常）
+    if len(pred_set) == 0 and len(gt_set) == 0:
+        return 1.0
+    # 其中一个为空（预测漏报或误报全集）
+    if len(pred_set) == 0 or len(gt_set) == 0:
+        return 0.0
+    
+    tp = len(pred_set.intersection(gt_set))
+    precision = tp / len(pred_set)
+    recall = tp / len(gt_set)
+    
+    if (precision + recall) == 0:
+        return 0.0
+    
+    return 2 * precision * recall / (precision + recall)
 
 def format_reward(response: str) -> float:
-    # 去掉空白
-    response = response.strip()
-    # 匹配：结尾是 \boxed{Row X, Column Y}（可带结尾句号）
-    pattern = re.compile(r"\\boxed\{Row\s+\d+,\s*Column\s+\d+\}\.?$")
+    # 匹配逻辑：查找是否存在 \boxed{ 后面紧跟任意内容直到遇到第一个 }
+    # \\boxed\{  匹配 \boxed{
+    # .*?        非贪婪匹配，匹配括号内的任何字符
+    # \}         匹配结束的 }
+    pattern = re.compile(r"\\boxed\{.*?\}")
 
     format_match = re.search(pattern, response)
     return 1.0 if format_match else 0.0
-
 
 
 def compute_score(reward_inputs: list[dict[str, Any]], format_weight: float = 0.1) -> list[dict[str, float]]:
@@ -110,7 +196,6 @@ def compute_score(reward_inputs: list[dict[str, Any]], format_weight: float = 0.
     scores = []
     for reward_input in reward_inputs:
         response = re.sub(r"\s*(<|>|/)\s*", r"\1", reward_input["response"])  # handle qwen2.5vl-32b format
-        reward_input["ground_truth"] = reward_input["ground_truth"].split("--")[1]
         format_score = format_reward(response)
         accuracy_score = accuracy_reward(response, reward_input["ground_truth"])
         

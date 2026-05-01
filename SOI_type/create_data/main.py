@@ -326,7 +326,9 @@ if __name__ == "__main__":
     parser.add_argument("--max_attributes", type=int, default=3, help="每个odd图标的最大属性数")
 
     args = parser.parse_args()
-    
+    if args.data_type == "val_data":
+        register_all_svg(f"../../IOL_type/create_data/svg_file_test")
+        
     # 注册SVG文件
     register_all_svg(f"../../IOL_type/create_data/svg_file_{args.data_type[:-5]}")
     

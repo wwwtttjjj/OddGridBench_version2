@@ -7,7 +7,7 @@ data:
   video_key: videos
   image_dir: null
   video_fps: 2.0
-  max_prompt_length: 2048
+  max_prompt_length: 4096
   max_response_length: 1024
   rollout_batch_size: 512  # equivalent to verl's data.train_batch_size
   mini_rollout_batch_size: null  # equivalent to verl's data.gen_batch_size
@@ -16,7 +16,7 @@ data:
   override_chat_template: null
   shuffle: true
   seed: 1
-  min_pixels: 262144
+  min_pixels: 10000
   max_pixels: 1048576
   filter_overlong_prompts: false
 
@@ -90,7 +90,7 @@ worker:
 trainer:
   total_epochs: 2
   max_steps: 100
-  project_name: Anomaly detection
+  project_name: Anomaly_detection
   experiment_name: oddgrid_grpo
   logger: ["file", "wandb"]
   # logger: ["file"]

@@ -139,26 +139,126 @@ def eval_json_dir(json_dir: str, out_csv: str):
 
     print(f"✅ Saved CSV to: {out_csv}")
 
+def generate_combined_report(all_results, datasets, out_path):
+    """
+    生成总表：行是模型，列是 数据集_EM 和 数据集_F1
+    all_results: { dataset_name: { model_name: {EM: x, F1: y} } }
+    """
+    # 1. 提取所有出现的模型名并按规模排序
+    all_models = set()
+    for ds in all_results:
+        all_models.update(all_results[ds].keys())
+    sorted_models = sorted(list(all_models), key=model_size_key)
+
+    # 2. 准备表头
+    header = ["model"]
+    for ds in datasets:
+        header.append(f"{ds}_EM")
+        header.append(f"{ds}_F1")
+
+    # 3. 写入 CSV
+    with open(out_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+
+        for model in sorted_models:
+            row = [model]
+            for ds in datasets:
+                # 如果某个模型在某个数据集没结果，填空或0
+                res = all_results.get(ds, {}).get(model, {"EM": 0, "F1": 0})
+                row.append(f"{res['EM'] * 100:.2f}")
+                row.append(f"{res['F1'] * 100:.2f}")
+            writer.writerow(row)
+
+    print(f"\n📊 总表已生成: {out_path}")
+
+def save_markdown_report(all_results, datasets, out_path):
+    """
+    生成带双行表头视觉效果的 Markdown 总表并保存到文件
+    """
+    all_models = set()
+    for ds in all_results:
+        all_models.update(all_results[ds].keys())
+    sorted_models = sorted(list(all_models), key=model_size_key)
+
+    lines = []
+    
+    # 第一行表头：数据集名称（每个数据集占两列空间）
+    # 使用 空白单元格 来模拟合并效果
+    header_row1 = "| model | " + " | ".join([f" **{ds}** | " for ds in datasets]) + " |"
+    
+    # 第二行表头：具体的指标名称 (EM, F1)
+    header_row2 = "| 指标 | " + " | ".join([" EM | F1 " for _ in datasets]) + " |"
+    
+    # 第三行：Markdown 必须的分割线
+    separator = "| :--- | " + " | ".join([" :---: | :---: " for _ in datasets]) + " |"
+    
+    lines.append(header_row1)
+    lines.append(header_row2)
+    lines.append(separator)
+
+    # 数据行
+    for model in sorted_models:
+        row = [f"**{model}**"]
+        for ds in datasets:
+            res = all_results.get(ds, {}).get(model, {"EM": 0, "F1": 0})
+            row.append(f"{res['EM']*100:.2f}")
+            row.append(f"{res['F1']*100:.2f}")
+        lines.append("| " + " | ".join(row) + " |")
+
+    # 写入文件
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+    
+    print(f"✅ Markdown 总表已保存至: {out_path}")
 # =========================
-# main
+# 修改后的 main 逻辑
 # =========================
 if __name__ == "__main__":
     json_dirs = [
-        "mnist_output/",
-        "hanzi_output/",
-        "icon_output/",
-        "BTech_output/",
-        "MVTEC_loco_output/",
-        "ELPV_output/", 
-        "MVTEC_output/",
-        "VisA_output/",
+        "mnist_output", "hanzi_output", "icon_output", "BTech_output",
+        "MVTEC_loco_output", "ELPV_output", "MVTEC_output", "VisA_output"
     ]
 
     out_root = Path("results_total")
     out_root.mkdir(parents=True, exist_ok=True)
 
-    for json_dir in json_dirs:
-        json_dir = json_dir.rstrip("/")
-        out_csv = out_root / f"{json_dir}_results.csv"
-        print(f"\n=== Evaluating {json_dir}/ ===")
-        eval_json_dir(f"{json_dir}/", str(out_csv))
+    # 用于存放所有数据的汇总字典
+    # 格式: { "mnist": { "Qwen-7B": {"EM": 0.9, "F1": 0.95}, ... }, ... }
+    total_summary = {}
+
+    for dir_name in json_dirs:
+        input_path = Path(dir_name)
+        if not input_path.exists():
+            print(f"⚠️ 跳过目录: {dir_name} (不存在)")
+            continue
+            
+        print(f"\n=== Evaluating {dir_name}/ ===")
+        
+        # 1. 计算当前目录下的所有模型
+        json_files = sorted(input_path.glob("*.json"))
+        current_ds_results = {}
+        
+        for jp in json_files:
+            em, f1 = eval_json_file(jp)
+            current_ds_results[jp.stem] = {"EM": em, "F1": f1}
+        
+        # 存入汇总大字典
+        total_summary[dir_name] = current_ds_results
+
+        # 2. 同时也保存你原来的单数据集 CSV
+        out_csv = out_root / f"{dir_name}_results.csv"
+        with open(out_csv, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["model", "EM", "F1"])
+            for model_name in sorted(current_ds_results.keys(), key=model_size_key):
+                m = current_ds_results[model_name]
+                writer.writerow([model_name, f"{m['EM']*100:.2f}", f"{m['F1']*100:.2f}"])
+
+    # =========================
+    # 生成最终的总表
+    # =========================
+    combined_csv_path = out_root / "SUMMARY_TOTAL_REPORT.csv"
+    generate_combined_report(total_summary, json_dirs, combined_csv_path)
+    md_out_path = out_root / "SUMMARY_TOTAL_REPORT.md"
+    save_markdown_report(total_summary, json_dirs, md_out_path)

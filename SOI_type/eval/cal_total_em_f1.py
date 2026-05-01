@@ -181,6 +181,7 @@ if __name__ == "__main__":
         "BTech_output/",
         "MVTEC_output/",
         "ELPV_output/",
+        "nanfang_output/",
         
     ]
 

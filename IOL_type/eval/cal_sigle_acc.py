@@ -76,6 +76,8 @@ def eval_json_file(json_path: Path):
         
         # --- 修改部分：支持字符串格式的 grid_size ---
         grid_size = sample.get("grid_size", [3, 3])
+        print(f"Grid size: {grid_size}")
+        
         if isinstance(grid_size, str):
             try:
                 # 将 "[3, 3]" 转换为 [3, 3]
@@ -84,7 +86,8 @@ def eval_json_file(json_path: Path):
                 # 如果解析失败，回退到默认值
                 grid_size = [3, 3]
         # ------------------------------------------
-
+        # if grid_size[0] != 3 or grid_size[1] != 3:
+            # continue  # 目前仅处理默认的 3x3 网格，后续可以根据需要调整
         tp, fp, tn, fn = compute_cell_confusion_matrix(pred_set, gt_set, grid_size)
         
         total_tp += tp
@@ -147,6 +150,8 @@ def eval_all(json_dir_list, out_csv):
 if __name__ == "__main__":
     # 1. 定义你要处理的目录列表
     target_dirs = ["VisA_output", "MVTEC_output", "BTech_output", "ELPV_output", "hanzi_output", "icon_output", "mnist_output", "MVTEC_loco_output"]
+    # target_dirs = ["VisA_output"]
+    
     
     # 2. 定义存放结果的总文件夹
     out_root = Path("results_single")

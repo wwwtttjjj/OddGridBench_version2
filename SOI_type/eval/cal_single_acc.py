@@ -85,7 +85,8 @@ def eval_json_file(json_path: Path):
         
         # 自动获取该组图片的数量，默认 9
         total_imgs = sample.get("total_images") or sample.get("image_num") or 9
-        
+        if total_imgs != 8:
+            continue
         tp, fp, tn, fn = compute_soi_metrics(pred, gt, int(total_imgs))
         t_tp += tp; t_fp += fp; t_tn += tn; t_fn += fn
 
@@ -153,6 +154,7 @@ if __name__ == "__main__":
         "ELPV_output",
         "hanzi_output",
         "icon_output",
-        "mnist_output"
+        "mnist_output",
+        "nanfang_output",
     ]
     run_soi_evaluation(my_dirs)

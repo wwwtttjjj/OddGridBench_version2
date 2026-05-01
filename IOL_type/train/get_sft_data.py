@@ -72,10 +72,10 @@ def convert_dataset(
 
 if __name__ == "__main__":
     train_json_path = "../create_data/train_data.json"
-    test_json_path  = "../create_data/test_data.json"
+    test_json_path  = "../create_data/val_data.json"
 
     train_image_dir = "../../IOL_type/create_data/train_data/image"
-    test_image_dir  = "../../IOL_type/create_data/test_data/image"
+    test_image_dir  = "../../IOL_type/create_data/val_data/image"
 
     train_out = "./train_sft_qa.json"
     test_out  = "./test_sft_qa.json"

@@ -5,9 +5,7 @@ import requests
 import argparse
 from tqdm import tqdm
 from pathlib import Path
-from configs import BASE_DATA_DIR, SAVE_DIR, MODEL_PATH, max_new_tokens
-# 从你的本地推理脚本中导入逻辑函数
-from vllm_infer_dire import build_multimodal_prompt, extract_answer
+from configs import BASE_DATA_DIR, SAVE_DIR, MODEL_PATH, max_new_tokens, build_multimodal_prompt, extract_answer
 
 # ================= 配置区 =================
 API_URL = "http://localhost:8081/v1/chat/completions"
@@ -131,11 +129,11 @@ def run_inference(data_type, dataset_name, model_name, mode):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type", type=str, default="iol", help="iol or soi")
-    parser.add_argument("--dataset", type=str, default="mvtec", help="e.g., mvtec, VisA")
-    parser.add_argument("--model_name", type=str, default="Qwen3-VL-8B-Instruct")
+    parser.add_argument("--type", type=str, default="soi", help="iol or soi")
+    parser.add_argument("--dataset", type=str, default="Nanfang", help="e.g., mvtec, VisA")
+    parser.add_argument("--model_name", type=str, default="Qwen3-VL-4B-Instruct")
     # 增加 mode 参数
-    parser.add_argument("--mode", type=str, default="one-example", 
+    parser.add_argument("--mode", type=str, default="two-examples", 
                         choices=["zero-shot", "one-example", "two-examples"])
     args = parser.parse_args()
 

@@ -1,7 +1,7 @@
 import random
 import math
 configs = {
-    "image_size": (2048, 2048),
+    "image_size": (1024, 1024),
     "grid_x" : [3, 9],
     "grid_y" : [3, 9],
     "margin": [30, 50],

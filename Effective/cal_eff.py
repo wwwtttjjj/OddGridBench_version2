@@ -5,7 +5,7 @@ import csv
 from glob import glob
 
 BASE_DIR = "./"
-TYPES = ["single_results", "iol_output", "soi_output"]
+TYPES = ["single_results_one-example", "single_results_two-examples", "single_results_zero-shot", "iol_output", "soi_output"]
 SAVE_DIR = "./results"
 
 
@@ -52,7 +52,7 @@ def process_file(file_path, data_type):
         "samples": len(data),
         "total_images": total_images,
         "total_time": round(total_time, 4),
-        "avg_per_image_time": round(total_time / total_images, 6)
+        "avg_per_image_time": round(total_time / total_images, 2)
     }
 
 

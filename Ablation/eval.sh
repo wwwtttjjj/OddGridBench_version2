@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
-export CUDA_VISIBLE_DEVICES=4,5,6,7
+export CUDA_VISIBLE_DEVICES=0,1
 
 source /nfsdata4/wengtengjin/oddgrid_task/env/easyr1/bin/activate
 
 # 1. 定义数据类型
-DATA_TYPES=(VisA BTech MVTEC ELPV)
+# DATA_TYPES=(VisA BTech_Dataset_transformed mvtec ELPV)
+DATA_TYPES=(BTech_Dataset_transformed mvtec)
+
 
 # 2. 定义待测试模型
 MODELS=(
   Qwen3-VL-4B-Instruct
-  Qwen3-VL-8B-Instruct
+  # Qwen3-VL-8B-Instruct
   Qwen3-VL-32B-Instruct
-  Qwen3-VL-2B-Instruct
+  # Qwen3-VL-2B-Instruct
 )
 
 # 3. 新增：定义推理模式
