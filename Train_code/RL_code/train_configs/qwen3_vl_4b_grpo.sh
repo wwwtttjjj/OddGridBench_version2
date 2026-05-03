@@ -4,15 +4,18 @@ wandb login 195651cd9cf6fd812ec326a663dbcf7e518b29c2
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 TARGET_DIR=$(dirname "$(dirname "$(dirname "$SCRIPT_DIR")")")
+
+#DATATYPE=("soi" "iol" "total" "icon" "real")
 DATATYPE="total"
 
 TRAIN_TRAIN_PATH="$TARGET_DIR/Train_data/train_rl_data.jsonl"
-TRAIN_VAL_PATH="$TARGET_DIR/Train_data/test_rl_data.jsonl"
+TRAIN_VAL_PATH="$TARGET_DIR/Train_data/test_data.jsonl"
+
 # TRAIN_TRAIN_PATH="$TARGET_DIR/${DATATYPE}_type/train/train_rl_data.jsonl"
 # TRAIN_VAL_PATH="$TARGET_DIR/${DATATYPE}_type/train/test_rl_data.jsonl"
 
 
-MODEL_PATH=../../../models/Qwen3-VL-2B-Instruct  # replace it with your local file path
+MODEL_PATH=../../../models/Qwen3-VL-4B-Instruct  # replace it with your local file path
 echo "Using training file: $TRAIN_FILE_PATH"
 
 python3 -m verl.trainer.main \

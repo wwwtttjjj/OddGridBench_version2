@@ -69,12 +69,16 @@ def convert_dataset(
 if __name__ == "__main__":
     train_json_path = "../create_data/train_data.json"
     test_json_path  = "../create_data/val_data.json"
+    train_out = "./train_icon_rl_data.jsonl"
 
     train_image_dir = "../../SOI_type/create_data/train_data/image"
     test_image_dir  = "../../SOI_type/create_data/val_data/image"
-
-    train_out = "./train_rl_data.jsonl"
     test_out  = "./test_rl_data.jsonl"
+    
+    train_real_json = "../../training_data_real/total_data_soi/soi_test_data.json"
+    train_real_img_dir = "../../training_data_real/total_data_soi/image"
+    train_real_out = "./train_real_rl_data.jsonl"
 
-    convert_dataset(train_json_path, train_image_dir, train_out, max_num=15000000)
+    convert_dataset(train_json_path, train_image_dir, train_out, max_num=None)
     convert_dataset(test_json_path,  test_image_dir,  test_out,  max_num=None)
+    convert_dataset(train_real_json, train_real_img_dir, train_real_out, max_num=None)

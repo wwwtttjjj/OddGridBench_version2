@@ -63,31 +63,20 @@ def convert_and_save_dataset(json_path: str, image_dir: str, out_path: str, num:
 if __name__ == "__main__":
     train_json = "../create_data/train_data.json"
     train_img_dir = "../../IOL_type/create_data/train_data/image"
-    train_out = "./train_rl_data.jsonl"
+    train_out = "./train_icon_rl_data.jsonl"
 
+    
+    train_real_json = "../../training_data_real/total_data_iol/iol_test_data.json"
+    train_real_img_dir = "../../training_data_real/total_data_iol/image"
+    train_real_out = "./train_real_rl_data.jsonl"
+    
+    
     val_json = "../create_data/val_data.json"
     val_img_dir = "../../IOL_type/create_data/val_data/image"
     val_out = "./test_rl_data.jsonl"
-    
-    
 
-    convert_and_save_dataset(train_json, train_img_dir, train_out, num=30000)
+    convert_and_save_dataset(train_json, train_img_dir, train_out)
+    convert_and_save_dataset(train_real_json, train_real_img_dir, train_real_out)
+    
     convert_and_save_dataset(val_json, val_img_dir, val_out)
     
-    
-    # 图片路径（所有难度共用）
-    # IMAGE_DIR = "/data/wengtengjin/colorsense/create_data/train_data/image"
-
-    # # 输入目录（包含 easy.json / medium.json / hard.json 等）
-    # INPUT_DIR = "rl_data"
-    # OUTPUT_DIR = "./rl_ready"
-    # os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-    # # 遍历并逐个转换
-    # for filename in os.listdir(INPUT_DIR):
-    #     if filename.endswith(".json"):
-    #         json_path = os.path.join(INPUT_DIR, filename)
-    #         out_path = os.path.join(OUTPUT_DIR, filename.replace(".json", ".jsonl"))
-    #         convert_and_save_dataset(json_path, IMAGE_DIR, out_path)
-
-    # print(f"📂 所有文件已输出到: {os.path.abspath(OUTPUT_DIR)}")

@@ -60,24 +60,34 @@ def merge_jsonl_files(file1_path, file2_path, output_file_path):
     print(f"合并完成，结果已保存到 {output_file_path}")
 
 if __name__ == "__main__":
-    data_type = ["train_rl","test_rl"]
+    data_type = ["train_icon_rl","train_real_rl","test_rl"]
     for data in data_type:
         # 示例调用
-        file1 = f"/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/IOL_type/train/{data}_data.jsonl"  # 替换为实际文件1路径
-        file2 = f"/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/SOI_type/train/{data}_data.jsonl"  # 替换为实际文件2路径
-        output_file = f"{data}_data.jsonl"  # 替换为保存路径
-        
-        
+        file1 = f"/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/IOL_type/train_iol/{data}_data.jsonl"  # 替换为实际文件1路径
+        file2 = f"/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/SOI_type/train_soi/{data}_data.jsonl"  # 替换为实际文件2路径
+        output_file = f"{data[:-3]}_data.jsonl"  # 替换为保存路径
 
         merge_jsonl_files(file1, file2, output_file)
         
-    data_type = ["train_sft","test_sft"]
+    data_type = ["soi","iol"]
     for data in data_type:
         # 示例调用
-        file1 = f"/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/IOL_type/train/{data}_qa.json"  # 替换为实际文件1路径
-        file2 = f"/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/SOI_type/train/{data}_qa.json"  # 替换为实际文件2路径
-        output_file = f"{data}_qa.json"  # 替换为保存路径
+        data_upper = data.upper()
+        file1 = f"/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/{data_upper}_type/train_{data}/train_icon_rl_data.jsonl"  # 替换为实际文件1路径
+        file2 = f"/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/{data_upper}_type/train_{data}/train_real_rl_data.jsonl"  # 替换为实际文件2路径
+        output_file = f"train_{data}_data.jsonl"  # 替换为保存路径
+        merge_jsonl_files(file1, file2, output_file)
+    
+    total_data_file = "train_total_data.jsonl"
+    merge_jsonl_files("train_soi_data.jsonl", "train_iol_data.jsonl", total_data_file)
+        
+    # data_type = ["train_sft","test_sft"]
+    # for data in data_type:
+    #     # 示例调用
+    #     file1 = f"/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/IOL_type/train/{data}_qa.json"  # 替换为实际文件1路径
+    #     file2 = f"/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/SOI_type/train/{data}_qa.json"  # 替换为实际文件2路径
+    #     output_file = f"{data}_qa.json"  # 替换为保存路径
         
         
 
-        merge_sft_files(file1, file2, output_file)
+    #     merge_sft_files(file1, file2, output_file)
