@@ -72,13 +72,25 @@ def collect_images(image_root):
 # =========================
 # Detection Prompt
 # =========================
-def build_detection_prompt():
-    return """
-    你是一个目标检测模型。检测图像中的主要物体（我主要是为了去掉背景），返回这个物体的，目标边界框，像素坐标为 [x1, y1, x2, y2]，仅返回 JSON 数组。
-    [
-    {"label": "目标名称", "box": [x1, y1, x2, y2]}
-    ]
-    """
+def build_detection_prompt(name):
+    return f"""
+你是一个目标检测模型。请在图像中检测关键词对应的目标物体，用于后续裁剪去除背景。
+
+目标关键词：{name}
+
+要求：
+1. 只检测与目标关键词相关的主要物体，不要检测背景、阴影、文字、水印或无关物体。
+2. 返回目标物体的最外接边界框，尽量完整包含整个物体。
+3. 边界框使用图像像素坐标，格式为 [x1, y1, x2, y2]。
+4. 如果图像中存在多个同类目标，只返回最主要、最完整的一个。
+5. 如果没有找到目标物体，返回空数组 []。
+6. 仅返回 JSON 数组，不要输出任何解释、Markdown 或额外文本。
+
+返回格式：
+[
+  {{"label": "{name}", "box": [x1, y1, x2, y2]}}
+]
+"""
 
 
 # =========================
@@ -107,6 +119,7 @@ def run(args):
     image_root = args.image_dir
     model_path = args.model_path
     save_json_path = args.save_json
+    name = save_json_path.split("/")[-1][:-5]
 
     os.makedirs(os.path.dirname(save_json_path), exist_ok=True)
 
@@ -123,7 +136,7 @@ def run(args):
         for item in results:
             processed.add(item["image"])
 
-    prompt = build_detection_prompt()
+    prompt = build_detection_prompt(name)
 
     for img_path in tqdm(image_paths):
         rel_path = os.path.relpath(img_path, image_root)
@@ -173,6 +186,10 @@ def main():
     image_roots = [
         Path("RAD/manual_images"),
         Path("MPDD/manual_images"),
+        Path("GOODADS/manual_images"),
+        Path("mvtec_ad2/manual_images"),
+        
+        
     ]
 
     for image_root in image_roots:
@@ -180,9 +197,17 @@ def main():
             if not sub_dir.is_dir():
                 continue
 
+            save_json = sub_dir / f"{sub_dir.name}.json"
+
+            # 如果已有结果，先删除，再重新跑
+            if save_json.exists():
+                print(f"[DELETE] Existing JSON removed: {save_json}")
+                save_json.unlink()
+
             args.image_dir = str(sub_dir)
-            args.save_json = str(sub_dir / f"{sub_dir.name}.json")
-            run(args)
+            args.save_json = str(save_json)
+
+            run(args)  
 
 
 
