@@ -7,11 +7,10 @@ import os
 
 from PIL import Image
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import Lock
 from merge_all_data import merge_soi_datasets
+
 from configs import (
     MIN_SET_SIZE, MAX_SET_SIZE,
-    odd_nums, odd_pro,
     MIN_IMG_MAX_SIDE, MAX_IMG_MAX_SIDE,
     MIN_CELL_PADDING, MAX_CELL_PADDING,
     BG_COLOR, MAX_CANVAS_SIZE,
@@ -21,71 +20,46 @@ from configs import (
 # ======================
 # Generate single SOI sample
 # ======================
-def generate_single_soi(
-    normal_pool,
-    anomaly_pool,
-    normal_ptr_ref,
-    pool_lock,
-    stop_flag,
-):
-    with pool_lock:
-        # ❗ 只有完全没有 anomaly 才退出（这里不设置 stop_flag）
-        if len(anomaly_pool) == 0:
-            return None, None
+def split_pool_into_groups(image_pool, min_size, max_size):
+    groups = []
+    ptr = 0
 
-        num_images = random.randint(MIN_SET_SIZE, MAX_SET_SIZE)
+    while ptr < len(image_pool):
+        group_size = random.randint(min_size, max_size)
+        groups.append(image_pool[ptr:ptr + group_size])
+        ptr += group_size
 
-        # 原始采样
-        odd_k = random.choices(odd_nums, weights=odd_pro)[0]
+    # 如果最后一组数量小于 min_size，就和倒数第二组重新均分
+    if len(groups) >= 2 and len(groups[-1]) < min_size:
+        merged = groups[-2] + groups[-1]
+        random.shuffle(merged)
 
-        # ✅ 自动降级（关键）
-        odd_k = min(odd_k, num_images, len(anomaly_pool))
+        left_size = len(merged) // 2
+        groups[-2] = merged[:left_size]
+        groups[-1] = merged[left_size:]
 
-        # 正常数量
-        need_normal = num_images - odd_k
+    return groups
 
-        # 随机位置
-        odd_indices_set = set(random.sample(range(num_images), odd_k))
 
-        # ✅ 先消费 anomaly（关键）
-        odd_paths = [anomaly_pool.pop() for _ in range(odd_k)]
-
-        # ✅ 在消费之后再决定 stop（核心修复！！！）
-        if len(anomaly_pool) == 0:
-            stop_flag["stop"] = True
-
-        # normal 无限复用
-        normal_paths = []
-        for _ in range(need_normal):
-            if normal_ptr_ref[0] >= len(normal_pool):
-                random.shuffle(normal_pool)
-                normal_ptr_ref[0] = 0
-            normal_paths.append(normal_pool[normal_ptr_ref[0]])
-            normal_ptr_ref[0] += 1
-
-    # ---------- 图像处理 ----------
+def generate_single_soi(sampled_items):
     img_max_side = random.randint(MIN_IMG_MAX_SIDE, MAX_IMG_MAX_SIDE)
     cell_padding = random.randint(MIN_CELL_PADDING, MAX_CELL_PADDING)
 
     images = []
     source_images_info = []
+    odd_indices = []
 
-    n_ptr, a_ptr = 0, 0
+    for idx, item in enumerate(sampled_items):
+        p = item["path"]
+        label = item["label"]
 
-    for idx in range(num_images):
-        is_anomaly = idx in odd_indices_set
-
-        if is_anomaly:
-            p = odd_paths[a_ptr]
-            a_ptr += 1
-        else:
-            p = normal_paths[n_ptr]
-            n_ptr += 1
+        if label == "anomaly":
+            odd_indices.append(idx + 1)
 
         source_images_info.append({
             "index_in_sequence": idx + 1,
             "original_filename": p.name,
-            "label": "anomaly" if is_anomaly else "normal"
+            "label": label
         })
 
         img = Image.open(p).convert("RGB")
@@ -103,9 +77,9 @@ def generate_single_soi(
     meta = {
         "id": str(uuid.uuid4()),
         "task_type": "soi",
-        "total_icons": num_images,
-        "num_odds": odd_k,
-        "odd_indices": sorted([i + 1 for i in odd_indices_set]),
+        "total_icons": len(sampled_items),
+        "num_odds": len(odd_indices),
+        "odd_indices": sorted(odd_indices),
         "source_images_details": source_images_info,
         "cell_padding": cell_padding,
         "img_max_side": img_max_side
@@ -114,9 +88,6 @@ def generate_single_soi(
     return images, meta
 
 
-# ======================
-# Generate SOI dataset
-# ======================
 def generate_soi_dataset(data_root, out_dir, samples=1000, seed=0, num_threads=8):
     random.seed(seed)
 
@@ -130,32 +101,32 @@ def generate_soi_dataset(data_root, out_dir, samples=1000, seed=0, num_threads=8
     images_root = out_dir / "images"
     images_root.mkdir(parents=True, exist_ok=True)
 
-    normal_pool = load_image_list(data_root / "Normal")
-    anomaly_pool = load_image_list(data_root / "Anomaly")
+    normal_pool = [
+        {"path": p, "label": "normal"}
+        for p in load_image_list(data_root / "Normal")
+    ]
 
-    random.shuffle(normal_pool)
-    random.shuffle(anomaly_pool)
+    anomaly_pool = [
+        {"path": p, "label": "anomaly"}
+        for p in load_image_list(data_root / "Anomaly")
+    ]
 
-    normal_ptr_ref = [0]
-    stop_flag = {"stop": False}
+    image_pool = normal_pool + anomaly_pool
+    random.shuffle(image_pool)
 
-    pool_lock = Lock()
+    sample_groups = split_pool_into_groups(
+        image_pool=image_pool,
+        min_size=MIN_SET_SIZE,
+        max_size=MAX_SET_SIZE
+    )
+
+    # 如果外部传入 samples，就最多生成 samples 组
+    sample_groups = sample_groups[:samples]
+
     all_annotations = []
 
-    def worker(i):
-        if stop_flag["stop"]:
-            return None
-
-        imgs, meta = generate_single_soi(
-            normal_pool,
-            anomaly_pool,
-            normal_ptr_ref,
-            pool_lock,
-            stop_flag
-        )
-
-        if imgs is None:
-            return None
+    def worker(i, sampled_items):
+        imgs, meta = generate_single_soi(sampled_items)
 
         sample_folder_name = f"image_{data_name}_{i}"
         sample_folder = images_root / sample_folder_name
@@ -175,17 +146,16 @@ def generate_soi_dataset(data_root, out_dir, samples=1000, seed=0, num_threads=8
         return meta
 
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
-        futures = [executor.submit(worker, i) for i in range(1, samples + 1)]
+        futures = [
+            executor.submit(worker, i, sampled_items)
+            for i, sampled_items in enumerate(sample_groups, start=1)
+        ]
 
         for f in as_completed(futures):
             res = f.result()
 
             if res:
                 all_annotations.append(res)
-
-            # ✅ stop 但继续把已提交的线程跑完
-            if stop_flag["stop"]:
-                continue
 
     with (out_dir / "soi_test_data.json").open("w", encoding="utf-8") as f:
         json.dump(all_annotations, f, ensure_ascii=False, indent=2)
@@ -236,7 +206,7 @@ def main(DATA_NAME, IMAGE_DIR):
 
     SAMPLES = 100000
     SEED = random.randint(0, 10000)
-    THREADS = 8
+    THREADS = 16
 
     subdirs = [
         os.path.join(DATA_ROOT, d)
@@ -270,18 +240,18 @@ def main(DATA_NAME, IMAGE_DIR):
 # CLI（保持不变）
 # ======================
 if __name__ == "__main__":
+    DATASETS = [
+        ("BTech_Dataset_transformed", "A_cropped_images/"),
+        ("ELPV", "A_cropped_images/"),
+        ("GOODADS", "A_cropped_images/"),
+        ("MPDD", "A_cropped_images/"),
+        ("mvtec", "A_cropped_images/"),
+        ("RAD", "A_cropped_images/"),
+        ("VisA", "A_cropped_images/"),
+    ]
+
+    for DATA_NAME, IMAGE_DIR in DATASETS:
+        print(f"\n[INFO] Processing dataset: {DATA_NAME}, image dir: {IMAGE_DIR}")
+        main(DATA_NAME, IMAGE_DIR)
+
     
-    DATA_NAME = "GOODADS"
-    IMAGE_DIR = "manual_images/"
-    main(DATA_NAME, IMAGE_DIR)
-    
-    DATA_NAME = "mvtec_ad2/"
-    IMAGE_DIR = "manual_images/"
-    main(DATA_NAME, IMAGE_DIR)
-    
-    DATA_NAME = "MVTEC_LOCO"
-    IMAGE_DIR = "manual_images/"
-    main(DATA_NAME, IMAGE_DIR)
-    
-    
-    main(DATA_NAME, IMAGE_DIR)

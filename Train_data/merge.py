@@ -80,14 +80,3 @@ if __name__ == "__main__":
     
     total_data_file = "train_total_data.jsonl"
     merge_jsonl_files("train_soi_data.jsonl", "train_iol_data.jsonl", total_data_file)
-        
-    # data_type = ["train_sft","test_sft"]
-    # for data in data_type:
-    #     # 示例调用
-    #     file1 = f"/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/IOL_type/train/{data}_qa.json"  # 替换为实际文件1路径
-    #     file2 = f"/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/SOI_type/train/{data}_qa.json"  # 替换为实际文件2路径
-    #     output_file = f"{data}_qa.json"  # 替换为保存路径
-        
-        
-
-    #     merge_sft_files(file1, file2, output_file)

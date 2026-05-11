@@ -5,8 +5,6 @@ MIN_GRID = 3
 MAX_GRID = 5
 
 
-odd_nums = [0, 1, 2, 3]
-odd_pro = [1, 6, 3, 1]  # 偏向 1 个 odd
 
 MIN_IMG_MAX_SIDE = 350
 MAX_IMG_MAX_SIDE = 600
@@ -24,8 +22,8 @@ BG_COLOR = (255, 255, 255)
 MAX_CANVAS_SIZE = 2048
 
 
-MIN_SET_SIZE = 8
-MAX_SET_SIZE = 13
+MIN_SET_SIZE = 12
+MAX_SET_SIZE = 16
 
 
 def resize_image_max_side(pil_img, max_size):
@@ -39,7 +37,7 @@ def resize_image_max_side(pil_img, max_size):
     ), scale
 
 def load_image_list(img_dir: Path):
-    imgs = sorted(img_dir.glob("*.JPG")) + sorted(img_dir.glob("*.png")) + sorted(img_dir.glob("*.bmp")) + sorted(img_dir.glob("*.jpg"))
+    imgs = sorted(img_dir.glob("*.JPG")) + sorted(img_dir.glob("*.png")) + sorted(img_dir.glob("*.bmp"))
     if not imgs:
         raise RuntimeError(f"No images in {img_dir}")
     return imgs

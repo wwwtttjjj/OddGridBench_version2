@@ -12,6 +12,7 @@ from merge_all_data import merge_iol_datasets
 
 from configs import (
     MIN_GRID, MAX_GRID,
+    odd_nums, odd_pro,
     MIN_IMG_MAX_SIDE, MAX_IMG_MAX_SIDE,
     MIN_GAP, MAX_GAP,
     MIN_MARGIN, MAX_MARGIN,
@@ -23,8 +24,11 @@ from configs import (
 # ======================
 # 拼图函数（不变）
 # ======================
-def generate_single_iol_from_items(rows, cols, cell_items):
+def generate_single_iol_from_paths(rows, cols, normal_paths, anomaly_paths):
     num_cells = rows * cols
+    odd_k = len(anomaly_paths)
+
+    odd_indices = set(random.sample(range(num_cells), odd_k))
 
     gap = random.randint(MIN_GAP, MAX_GAP)
     margin = random.randint(MIN_MARGIN, MAX_MARGIN)
@@ -34,39 +38,31 @@ def generate_single_iol_from_items(rows, cols, cell_items):
     cells = []
     cell_sizes = []
     cells_info = []
-    odd_indices = set()
+
+    n_ptr, a_ptr = 0, 0
 
     for idx in range(num_cells):
-        item = cell_items[idx]
+        is_anomaly = idx in odd_indices
 
-        if item is None:
-            img = None
-            original_name = None
-            label = None
+        if is_anomaly:
+            img_path = anomaly_paths[a_ptr]
+            a_ptr += 1
         else:
-            img_path = item["path"]
-            label = item["label"]
-            original_name = Path(img_path).name
-
-            if label == "anomaly":
-                odd_indices.add(idx)
-
-            img = Image.open(img_path).convert("RGB")
-            img, _ = resize_image_max_side(img, img_max_side)
+            img_path = normal_paths[n_ptr]
+            n_ptr += 1
 
         cells_info.append({
             "cell_index": idx,
             "grid_pos": [idx // cols + 1, idx % cols + 1],
-            "original_name": original_name,
-            "label": label
+            "original_name": Path(img_path).name,
+            "label": "anomaly" if is_anomaly else "normal"
         })
 
-        cells.append(img)
+        img = Image.open(img_path).convert("RGB")
+        img, _ = resize_image_max_side(img, img_max_side)
 
-        if img is None:
-            cell_sizes.append((img_max_side + 2 * cell_padding, img_max_side + 2 * cell_padding))
-        else:
-            cell_sizes.append((img.width + 2 * cell_padding, img.height + 2 * cell_padding))
+        cells.append(img)
+        cell_sizes.append((img.width + 2 * cell_padding, img.height + 2 * cell_padding))
 
     row_heights = [max(cell_sizes[r * cols + c][1] for c in range(cols)) for r in range(rows)]
     col_widths = [max(cell_sizes[r * cols + c][0] for r in range(rows)) for c in range(cols)]
@@ -87,11 +83,9 @@ def generate_single_iol_from_items(rows, cols, cell_items):
         x_cursor = margin
         for c in range(cols):
             img = cells[idx]
-
-            if img is not None:
-                x_img = x_cursor + (col_widths[c] - img.width) // 2
-                y_img = y_cursor + (row_heights[r] - img.height) // 2
-                canvas.paste(img, (x_img, y_img))
+            x_img = x_cursor + (col_widths[c] - img.width) // 2
+            y_img = y_cursor + (row_heights[r] - img.height) // 2
+            canvas.paste(img, (x_img, y_img))
 
             x_cursor += col_widths[c] + gap
             idx += 1
@@ -101,68 +95,13 @@ def generate_single_iol_from_items(rows, cols, cell_items):
     meta = {
         "id": str(uuid.uuid4()),
         "grid_size": [rows, cols],
-        "odd_count": len(odd_indices),
+        "odd_count": odd_k,
         "odd_rows_cols": sorted([[i // cols + 1, i % cols + 1] for i in odd_indices]),
         "source_cells": cells_info
     }
 
     return canvas, meta
 
-def choose_iol_grid_size(item_count):
-    valid_rows = [
-        rows for rows in range(MIN_GRID, MAX_GRID + 1)
-        if rows * rows >= item_count
-    ]
-
-    if valid_rows:
-        rows = random.choice(valid_rows)
-    else:
-        rows = MAX_GRID
-
-    return rows, rows
-
-
-def split_pool_into_iol_groups(image_pool, min_last_items=5):
-    groups = []
-    ptr = 0
-
-    while ptr < len(image_pool):
-        rows = random.randint(MIN_GRID, MAX_GRID)
-        num_cells = rows * rows
-
-        items = image_pool[ptr:ptr + num_cells]
-        ptr += num_cells
-
-        groups.append({
-            "rows": rows,
-            "cols": rows,
-            "items": items
-        })
-
-    # 最后一组太少，就和倒数第二组重新平分
-    if len(groups) >= 2 and len(groups[-1]["items"]) < min_last_items:
-        merged_items = groups[-2]["items"] + groups[-1]["items"]
-        random.shuffle(merged_items)
-
-        left_size = len(merged_items) // 2
-        left_items = merged_items[:left_size]
-        right_items = merged_items[left_size:]
-
-        left_rows, left_cols = choose_iol_grid_size(len(left_items))
-        right_rows, right_cols = choose_iol_grid_size(len(right_items))
-
-        groups[-2] = {
-            "rows": left_rows,
-            "cols": left_cols,
-            "items": left_items
-        }
-        groups[-1] = {
-            "rows": right_rows,
-            "cols": right_cols,
-            "items": right_items
-        }
-
-    return groups
 
 # ======================
 # 数据集生成（修复版）
@@ -178,41 +117,57 @@ def generate_dataset(data_root, out_dir, samples, seed, num_threads):
     img_dir = out_dir / "images"
     img_dir.mkdir(parents=True, exist_ok=True)
 
-    normal_pool = [
-        {"path": p, "label": "normal"}
-        for p in load_image_list(data_root / "Normal")
-    ]
+    normal_pool = load_image_list(data_root / "Normal")
+    anomaly_pool = load_image_list(data_root / "Anomaly")
 
-    anomaly_pool = [
-        {"path": p, "label": "anomaly"}
-        for p in load_image_list(data_root / "Anomaly")
-    ]
+    random.shuffle(normal_pool)
+    random.shuffle(anomaly_pool)
 
-    image_pool = normal_pool + anomaly_pool
-    random.shuffle(image_pool)
-
-    sample_groups = split_pool_into_iol_groups(
-        image_pool=image_pool,
-        min_last_items=5
-    )
-
-    sample_groups = sample_groups[:samples]
+    normal_ptr = 0
+    lock = Lock()
+    stop_flag = {"stop": False}
 
     annotations = []
 
-    def worker(idx, group):
-        rows = group["rows"]
-        cols = group["cols"]
-        num_cells = rows * cols
+    def worker(idx):
+        nonlocal normal_ptr
 
-        cell_items = list(group["items"])
+        # 👉 这里只是快速退出，不控制逻辑
+        if stop_flag["stop"]:
+            return None
 
-        # 不够一个完整网格的位置用 None 补齐
-        if len(cell_items) < num_cells:
-            cell_items.extend([None] * (num_cells - len(cell_items)))
+        rows = random.randint(MIN_GRID, MAX_GRID)
+        num_cells = rows * rows
 
-        img, meta = generate_single_iol_from_items(
-            rows, cols, cell_items
+        raw_odd_k = random.choices(odd_nums, weights=odd_pro)[0]
+
+        with lock:
+            # ❗ 只有完全没有 anomaly 才退出
+            if len(anomaly_pool) == 0:
+                return None
+
+            # ✅ 自动降级（关键）
+            odd_k = min(raw_odd_k, num_cells, len(anomaly_pool))
+
+            # ✅ 消费 anomaly（关键）
+            anomaly_paths = [anomaly_pool.pop() for _ in range(odd_k)]
+
+            # ✅ 在消费之后再决定 stop（关键！！！）
+            if len(anomaly_pool) == 0:
+                stop_flag["stop"] = True
+
+            # normal 无限复用
+            normal_paths = []
+            for _ in range(num_cells - odd_k):
+                if normal_ptr >= len(normal_pool):
+                    random.shuffle(normal_pool)
+                    normal_ptr = 0
+                normal_paths.append(normal_pool[normal_ptr])
+                normal_ptr += 1
+
+        # ---------- 生成图 ----------
+        img, meta = generate_single_iol_from_paths(
+            rows, rows, normal_paths, anomaly_paths
         )
 
         img, scale = resize_image_max_side(img, MAX_CANVAS_SIZE)
@@ -228,11 +183,11 @@ def generate_dataset(data_root, out_dir, samples, seed, num_threads):
 
         return meta
 
+    # ======================
+    # 线程执行（关键也修一下）
+    # ======================
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
-        futures = [
-            executor.submit(worker, i, group)
-            for i, group in enumerate(sample_groups)
-        ]
+        futures = [executor.submit(worker, i) for i in range(samples)]
 
         for f in as_completed(futures):
             res = f.result()
@@ -240,13 +195,20 @@ def generate_dataset(data_root, out_dir, samples, seed, num_threads):
             if res:
                 annotations.append(res)
 
+            # ❗ 不 break，不提前终止
+            # 否则会丢最后任务
+            if stop_flag["stop"]:
+                continue
+
+    # ======================
+    # 保存
+    # ======================
     with (out_dir / "iol_test_data.json").open("w", encoding="utf-8") as f:
         json.dump(annotations, f, ensure_ascii=False, indent=2)
 
 # ======================
 # merge（不变）
 # ======================
-
 def merge_all_details(src_root, image_dir):
     src_root = Path(src_root)
     combined_data = []
@@ -287,9 +249,9 @@ def main(DATA_NAME, IMAGE_DIR):
         shutil.rmtree(SAVE_ROOT)
     SAVE_ROOT.mkdir(parents=True, exist_ok=True)
 
-    SAMPLES = 100000
+    SAMPLES = 10000
     SEED = random.randint(0, 10000)
-    THREADS = 8
+    THREADS = 16
 
     subdirs = [
         os.path.join(DATA_ROOT, d)
@@ -323,20 +285,17 @@ def main(DATA_NAME, IMAGE_DIR):
 # main
 # ======================
 if __name__ == "__main__":
-    
-    DATA_NAME = "BTech_Dataset_transformed"
-    IMAGE_DIR = "manual_images/"
-    main(DATA_NAME, IMAGE_DIR)
-    
-    DATA_NAME = "mvtec"
-    IMAGE_DIR = "A_cropped_images/"
-    main(DATA_NAME, IMAGE_DIR)
-        
-    DATA_NAME = "ELPV"
-    IMAGE_DIR = "ELPV_split/"
-    
-    main(DATA_NAME, IMAGE_DIR)
-    
-    DATA_NAME = "VisA"
-    IMAGE_DIR = "A_cropped_images/"
-    main(DATA_NAME, IMAGE_DIR)
+    DATASETS = [
+        ("BTech_Dataset_transformed", "A_cropped_images/"),
+        ("GOODADS", "A_cropped_images/"),
+        ("MPDD", "A_cropped_images/"),
+        ("mvtec", "A_cropped_images/"),
+        ("mvtec_ad2", "A_cropped_images/"),
+        ("MVTEC_LOCO", "A_cropped_images/"),
+        ("RAD", "A_cropped_images/"),
+        ("VisA", "A_cropped_images/"),
+    ]
+
+    for DATA_NAME, IMAGE_DIR in DATASETS:
+        print(f"\n[INFO] Processing dataset: {DATA_NAME}, image dir: {IMAGE_DIR}")
+        main(DATA_NAME, IMAGE_DIR)
