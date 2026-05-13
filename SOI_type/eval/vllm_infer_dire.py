@@ -105,15 +105,16 @@ def run_vllm_http(args):
 
         image_names = [os.path.join(data.get("image"), str(i)+".png") for i in range(1, data.get("total_icons") + 1)]  # list of image paths
         image_paths = [os.path.join(configs_para["image_dir"], img_name) for img_name in image_names]
-        prompt = build_prompt(image_paths)
+        
+        if args.data_type in ["GOODADS", "RAD", "MPDD"]:
+            prompt = build_prompt_different_angle(image_paths)
+        elif args.data_type in ["mnist", "icon", "hanzi"]:
+            prompt = build_prompt_same_angle_synthesis(image_paths)
+        else:
+            prompt = build_prompt_same_angle_real(image_paths)
 
         predict_answer = call_vllm_server(prompt, image_paths, model_path)
         extract_answer = extract_answer_from_response(predict_answer)
-        # odd_lists = []
-
-        # odd_list = data.get("odd_icons", [])
-        # for odd in odd_list:
-        #     odd_lists.append(odd.get("icon_name"))
 
         save_item = {
             "id": id,
@@ -127,12 +128,12 @@ def run_vllm_http(args):
             "total_images": data.get("total_icons"),
         }
         write_json(save_json_path, save_item)
-
+    
     print(f"[INFO] ✅ Done! Saved results to {save_json_path}")
     
 def main():
     parser = argparse.ArgumentParser(description="Run multimodal inference via vLLM Python API")
-    parser.add_argument("--model_name", type=str, default="Qwen3-VL-32B-Instruct")
+    parser.add_argument("--model_name", type=str, default="Qwen3-VL-8B-Instruct")
     parser.add_argument(
         "--image_type",
         type=str,
@@ -143,7 +144,7 @@ def main():
         "--data_type",
         type=str,
         default="VisA",
-        help="icon, mnist, hanzi, VisA, BTech, MVTEC"
+        help="icon, mnist, hanzi,VisA, BTech, MVTEC, ELPV, GOODADS, RAD, MPDD, MVTEC_loco"
     )
 
     args = parser.parse_args()

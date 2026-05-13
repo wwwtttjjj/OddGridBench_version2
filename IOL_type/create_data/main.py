@@ -391,11 +391,10 @@ def generate_odd_one_out_image(
     # 1) 生成基础块 & 基础颜色/形状
     base_lab, base_rgb, base_shape = _generate_base_block(block_size, background_rgb)
 
-    # 2) 在网格中选择 odd 位置
-    odd_nums = [0, 1, 2, 3]
-    # 定义对应的权重（数值越大，抽中的概率越高）
-    odd_pro = [1, 6, 3, 1] 
 
+    odd_nums = [0, 1, 2, 3, 4]
+    odd_pro = [0.1, 0.5, 0.2, 0.1,0.1]
+    
     # 使用 random.choices 进行加权抽样
     # k=1 表示抽一个，返回的是列表，所以用 [0] 取出值
     chosen_odd_count = random.choices(odd_nums, weights=odd_pro, k=1)[0]
@@ -567,6 +566,10 @@ if __name__ == "__main__":
     args.draw_bbox = (args.data_type == "test_data")
     args.rowcol_image = (args.data_type == "test_data")
     
-    register_all_svg(f"./svg_file_{args.data_type[:-5]}")
+    if args.data_type == "val_data":
+        register_all_svg(f"../../IOL_type/create_data/svg_file_test")
+        
+    # 注册SVG文件
+    register_all_svg(f"../../IOL_type/create_data/svg_file_{args.data_type[:-5]}")
     
     build_dataset(args)

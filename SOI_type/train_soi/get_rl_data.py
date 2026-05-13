@@ -5,7 +5,7 @@ import random
 
 # 允许从上级目录 import
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from eval.utils import build_prompt
+from eval.utils import build_prompt_same_angle_synthesis, build_prompt_different_angle, build_prompt_same_angle_real
 
 
 def convert_dataset(
@@ -44,11 +44,27 @@ def convert_dataset(
 
 
         # ✅ 转换为绝对路径
-        image_abs = os.path.join(image_root, os.path.basename(image))
-        image_set = [os.path.join(image_abs, f"{i}.png") for i in range(1, item.get("total_icons") + 1)]
-        num_images = len(image_set)
+        
         # ✅ 构造 prompt
-        prompt = build_prompt(image_set)
+        data_source = item.get("source", "")
+        if data_source in ["icon", "minst","hanzi"]:
+            
+            image_abs = os.path.join(image_root, os.path.basename(image))
+            image_set = [os.path.join(image_abs, f"{i}.png") for i in range(1, item.get("total_icons") + 1)]
+            
+            prompt = build_prompt_same_angle_synthesis(image_set)
+            
+        elif data_source in ["RAD", "MPDD", "GOODADS"]:
+            image_abs = image
+            image_set = [os.path.join(image_abs, f"{i}.png") for i in range(1, item.get("total_icons") + 1)]
+            prompt = build_prompt_different_angle(image_set)
+            
+        else:
+            image_abs = image
+            image_set = [os.path.join(image_abs, f"{i}.png") for i in range(1, item.get("total_icons") + 1)]
+            prompt = build_prompt_same_angle_real(image_set)
+            
+            
         processed.append({
             "images": image_set,
             "problem": f"{prompt}",
@@ -75,8 +91,8 @@ if __name__ == "__main__":
     test_image_dir  = "../../SOI_type/create_data/val_data/image"
     test_out  = "./test_rl_data.jsonl"
     
-    train_real_json = "../../training_data_real/total_data_soi/soi_test_data.json"
-    train_real_img_dir = "../../training_data_real/total_data_soi/image"
+    train_real_json = "../../Train_data/total_data_soi/soi_test_data.json"
+    train_real_img_dir = "../../Train_data/total_data_soi/image"
     train_real_out = "./train_real_rl_data.jsonl"
 
     convert_dataset(train_json_path, train_image_dir, train_out, max_num=None)

@@ -13,14 +13,15 @@ from tqdm import tqdm  # 建议安装：pip install tqdm
 try:
     from configs import odd_nums, odd_pro
 except ImportError:
-    odd_nums = [1, 2, 3]
-    odd_pro = [0.7, 0.2, 0.1]
+    odd_nums = [0, 1, 2, 3, 4]
+    odd_pro = [0.1, 0.5, 0.2, 0.1,0.1]
 
 # ======================
 # 参数范围
 # ======================
-MIN_SET_SIZE = 8
-MAX_SET_SIZE = 20
+MIN_SET_SIZE = 12
+MAX_SET_SIZE = 16
+
 MIN_CELL_SIZE = 100
 MAX_CELL_SIZE = 150
 BG_COLOR = (255, 255, 255)

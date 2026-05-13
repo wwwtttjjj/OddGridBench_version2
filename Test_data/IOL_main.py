@@ -7,12 +7,18 @@ import numpy as np
 import shutil
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from configs import odd_nums, odd_pro
 # ======================
 # 参数范围
 # ======================
-MIN_GRID = 3
-MAX_GRID = 9
+# 尝试从 configs 导入，如果不存在则使用默认值
+try:
+    from configs import odd_nums, odd_pro
+except ImportError:
+    odd_nums = [0, 1, 2, 3, 4]
+    odd_pro = [0.1, 0.5, 0.2, 0.1,0.1]
+
+MIN_GRID = 4
+MAX_GRID = 8
 
 MIN_CELL_SIZE = 100
 MAX_CELL_SIZE = 150

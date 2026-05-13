@@ -5,13 +5,12 @@
 
 source /nfsdata4/wengtengjin/oddgrid_task/env/easyr1/bin/activate
 # DATA_TYPES=(VisA BTech MVTEC_loco MVTEC ELPV mnist hanzi icon)
-DATA_TYPES=(VisA BTech MVTEC ELPV)
-
+DATA_TYPES=(VisA BTech MVTEC ELPV GOODADS RAD MPDD icon mnist hanzi MVTEC_loco)
 
 MODELS=(
   Qwen3-VL-4B-Instruct
-  Qwen3-VL-8B-Instruct
   Qwen3-VL-32B-Instruct
+  Qwen3-VL-8B-Instruct
   Qwen3-VL-2B-Instruct
 )
 

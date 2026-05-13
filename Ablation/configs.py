@@ -24,7 +24,7 @@ def extract_answer(predict_answer):
     
     # 修改点：将 \{ 改为 \{1,2}，将 \} 改为 \}1,2}
     # 这样可以同时匹配 box{No} 和 box{{No}}
-    match = re.search(r'box\{{1,2}(Yes|No)\}{1,2}', predict_answer, re.IGNORECASE)
+    match = re.search(r'boxed\{{1,2}(Yes|No)\}{1,2}', predict_answer, re.IGNORECASE)
     
     if match:
         # .capitalize() 会把 "yes" 变成 "Yes", "no" 变成 "No"
@@ -106,13 +106,23 @@ def build_multimodal_prompt(mode, img_path, current_img_base64):
             ]})
             messages.append({"role": "assistant", "content": "Understood. I have identified the defective features for comparison."})
 
+    output_relu = f"""Strictly adhere to the following output rules\n
+    1.You may perform observation and comparative analysis before answering.
+    2. The FINAL ANSWER must be contained within exactly ONE \\boxed{{}} block.\n"""
     # 3. 最终指令
     if mode == "zero-shot":
-        instruction = "Please analyze the visual features of this image first, determine if there are any defects, and finally output the answer as box{Yes} or box{No}."
+        instruction = f"""{output_relu}
+        3. Determine if there are any defects, and finally output the answer as boxed{{Yes}} or boxed{{No}}."""
     elif mode == "one-example":
-        instruction = "Please analyze the current image first. Compared to the [Standard Normal Sample] provided earlier, does this image show any deviations or defects? Based on your analysis, output the final answer as box{Yes} or box{No}."
+        instruction = f"""
+        {output_relu}
+        3.Compared to the [Standard Normal Sample] provided earlier, does this image show any deviations or defects? 
+        4. Based on your analysis, output the final answer as boxed{{Yes}} or boxed{{No}}."""
     else: # two-examples
-        instruction = "Please analyze the current image first. By comparing it with both the [Standard Normal Sample] and the [Anomalous Sample] above, determine if this image is defective. Based on your comparison, output the final answer as box{Yes} or box{No}."
+        instruction = f"""
+        {output_relu} 
+        3. By comparing it with both the [Standard Normal Sample] and the [Anomalous Sample] above, determine if this image is defective. 
+        4. Based on your comparison, output the final answer as boxed{{Yes}} or boxed{{No}}."""
 
     messages.append({
         "role": "user",

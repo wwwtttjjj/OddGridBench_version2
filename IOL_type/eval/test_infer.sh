@@ -2,12 +2,11 @@
 # export CUDA_VISIBLE_DEVICES=0,1,2,3
 # DATA_TYPES=(icon mnist hanzi VisA BTech MVTEC_loco MVTEC)
 # DATA_TYPES=(VisA BTech MVTEC)
-export CUDA_VISIBLE_DEVICES=0,1
+# export CUDA_VISIBLE_DEVICES=0,1
 
 source /nfsdata4/wengtengjin/oddgrid_task/env/easyr1/bin/activate
-DATA_TYPES=(VisA BTech MVTEC_loco MVTEC ELPV mnist hanzi icon)
-
-MODELS=(Qwen3-VL-4B-iol)
+DATA_TYPES=(icon mnist hanzi VisA BTech MVTEC ELPV GOODADS RAD MPDD MVTEC_loco)
+MODELS=(Qwen3-VL-8B-Instruct)
 
 for data_type in "${DATA_TYPES[@]}"; do
   for model in "${MODELS[@]}"; do

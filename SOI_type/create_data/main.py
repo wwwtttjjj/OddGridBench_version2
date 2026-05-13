@@ -111,9 +111,8 @@ def _select_odd_positions_custom(total_count, max_odds):
     """
     # 随机选择1~max_odds个odd
     # 定义可选的奇数个数
-    odd_nums = [0, 1, 2, 3]
-    # 定义对应的权重（数值越大，抽中的概率越高）
-    odd_pro = [1, 6, 3, 1] 
+    odd_nums = [0, 1, 2, 3, 4]
+    odd_pro = [0.1, 0.5, 0.2, 0.1,0.1]
 
     # 使用 random.choices 进行加权抽样
     # k=1 表示抽一个，返回的是列表，所以用 [0] 取出值

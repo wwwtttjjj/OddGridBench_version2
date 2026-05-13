@@ -310,7 +310,7 @@ def main(DATA_NAME, IMAGE_DIR):
 
     SAMPLES = 100000
     SEED = random.randint(0, 10000)
-    THREADS = 4
+    THREADS = 16
 
     subdirs = [
         os.path.join(DATA_ROOT, d)
@@ -345,13 +345,14 @@ def main(DATA_NAME, IMAGE_DIR):
 # ======================
 if __name__ == "__main__":
     DATASETS = [
-        ("BTech_Dataset_transformed", "A_cropped_images/"),
-        ("ELPV", "A_cropped_images/"),
+        # ("BTech_Dataset_transformed", "A_cropped_images/"),
+        # ("ELPV", "A_cropped_images/"),
+        # ("mvtec", "A_cropped_images/"),
+        # ("VisA", "A_cropped_images/"),
         ("GOODADS", "A_cropped_images/"),
         ("MPDD", "A_cropped_images/"),
-        ("mvtec", "A_cropped_images/"),
         ("RAD", "A_cropped_images/"),
-        ("VisA", "A_cropped_images/"),
+        
     ]
 
     for DATA_NAME, IMAGE_DIR in DATASETS:

@@ -3,7 +3,8 @@ import os
 import sys
 # 允许从上级目录 import
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from eval.utils import build_prompt
+from eval.utils import build_prompt_same_angle_real, build_prompt_different_angle, build_prompt_same_angle_synthesis
+from pathlib import Path
 
 
 def convert_and_save_dataset(json_path: str, image_dir: str, out_path: str, num: int = None):
@@ -29,14 +30,26 @@ def convert_and_save_dataset(json_path: str, image_dir: str, out_path: str, num:
     samples = raw["data"] if isinstance(raw, dict) and "data" in raw else raw
 
     processed = []
+    
     for item in samples:
         odd_rows_cols = item.get("odd_rows_cols", [])
         image = item.get("image", "")
         grid_size = item.get("grid_size")
-        prompt = build_prompt(item)
+        
+        data_source = item.get("source", "")
+        if data_source in ["icon", "minst","hanzi"]:
+            prompt = build_prompt_same_angle_synthesis(item)
+            image_abs = os.path.join(image_dir, os.path.basename(image))
+            
+        elif data_source in ["RAD", "MPDD", "GOODADS"]:
+            prompt = build_prompt_different_angle(item)
+            image_abs = image
+        else:
+            prompt = build_prompt_same_angle_real(item)
+            image_abs = image
+            
 
         # 转换为绝对路径
-        image_abs = os.path.join(image_dir, os.path.basename(image))
         # ✅ 生成最终 boxed 答案
         answer = ",".join([f"({r},{c})" for r, c in odd_rows_cols])
         
@@ -65,18 +78,18 @@ if __name__ == "__main__":
     train_img_dir = "../../IOL_type/create_data/train_data/image"
     train_out = "./train_icon_rl_data.jsonl"
 
-    
-    train_real_json = "../../training_data_real/total_data_iol/iol_test_data.json"
-    train_real_img_dir = "../../training_data_real/total_data_iol/image"
-    train_real_out = "./train_real_rl_data.jsonl"
-    
-    
+        
     val_json = "../create_data/val_data.json"
     val_img_dir = "../../IOL_type/create_data/val_data/image"
     val_out = "./test_rl_data.jsonl"
+    
+    train_real_json = "../../Train_data/total_data_iol/iol_test_data.json"
+    train_real_img_dir = "../../Train_data/total_data_iol/image"
+    train_real_out = "./train_real_rl_data.jsonl"
+    
+
 
     convert_and_save_dataset(train_json, train_img_dir, train_out)
     convert_and_save_dataset(train_real_json, train_real_img_dir, train_real_out)
-    
     convert_and_save_dataset(val_json, val_img_dir, val_out)
     

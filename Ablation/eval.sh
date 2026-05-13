@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-export CUDA_VISIBLE_DEVICES=0,1
+# export CUDA_VISIBLE_DEVICES=0,1
 
 source /nfsdata4/wengtengjin/oddgrid_task/env/easyr1/bin/activate
 
 # 1. 定义数据类型
 # DATA_TYPES=(VisA BTech_Dataset_transformed mvtec ELPV)
-DATA_TYPES=(BTech_Dataset_transformed mvtec)
+DATA_TYPES=(BTech_Dataset_transformed mvtec ELPV VisA MPDD RAD GOODADS)
 
 
 # 2. 定义待测试模型
 MODELS=(
-  Qwen3-VL-4B-Instruct
+  # Qwen3-VL-4B-Instruct
   # Qwen3-VL-8B-Instruct
   Qwen3-VL-32B-Instruct
   # Qwen3-VL-2B-Instruct
@@ -21,7 +21,7 @@ MODELS=(
 # one-example: 1个正例
 # two-examples: 1个正例 + 1个负例
 # MODES=(zero-shot one-example two-examples)
-MODES=(one-example two-examples)
+MODES=(zero-shot one-example two-examples)
 
 # 开始嵌套循环
 for mode in "${MODES[@]}"; do
@@ -35,7 +35,7 @@ for mode in "${MODES[@]}"; do
       echo "------------------------------------------------"
       
       # 增加 --mode 参数传递给 python 脚本
-      python vllm_infer_dire.py \
+      python vllm_infer.py \
         --model_name "${model}" \
         --dataset "${data_type}" \
         --mode "${mode}" \

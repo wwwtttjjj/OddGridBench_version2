@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e  # 出错就停止执行
-train_num=15000
+train_num=10000
 
 # 要运行的命令列表
 commands=(

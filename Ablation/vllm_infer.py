@@ -5,18 +5,13 @@ import requests
 import argparse
 from tqdm import tqdm
 from pathlib import Path
-from configs import BASE_DATA_DIR, SAVE_DIR, MODEL_PATH, max_new_tokens, build_multimodal_prompt, extract_answer
+from configs import BASE_DATA_DIR, SAVE_DIR, MODEL_PATH, max_new_tokens, build_multimodal_prompt, extract_answer, encode_image
 
 # ================= 配置区 =================
 API_URL = "http://localhost:8081/v1/chat/completions"
 # =========================================
 
-def encode_image(image_path):
-    """将图像转换为 base64"""
-    if not image_path or not os.path.exists(image_path):
-        return None
-    with open(image_path, "rb") as f:
-        return base64.b64encode(f.read()).decode("utf-8")
+
 
 def call_vllm_api(messages, model_name):
     """通过 HTTP API 调用部署好的 vLLM 服务"""
@@ -129,8 +124,8 @@ def run_inference(data_type, dataset_name, model_name, mode):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--type", type=str, default="soi", help="iol or soi")
-    parser.add_argument("--dataset", type=str, default="Nanfang", help="e.g., mvtec, VisA")
+    parser.add_argument("--type", type=str, default="iol", help="iol or soi")
+    parser.add_argument("--dataset", type=str, default="mvtec", help="e.g., mvtec, VisA")
     parser.add_argument("--model_name", type=str, default="Qwen3-VL-4B-Instruct")
     # 增加 mode 参数
     parser.add_argument("--mode", type=str, default="two-examples", 

@@ -2,8 +2,8 @@ import random
 import math
 configs = {
     "image_size": (1024, 1024),
-    "grid_x" : [3, 9],
-    "grid_y" : [3, 9],
+    "grid_x" : [4, 9],
+    "grid_y" : [4, 9],
     "margin": [30, 50],
     "block_size":[100, 150],
     "gap": [10, 50],

@@ -5,8 +5,8 @@ MIN_GRID = 3
 MAX_GRID = 5
 
 
-odd_nums = [0, 1, 2, 3, 4, 5]
-odd_pro = [10, 55, 22, 9, 3, 1]
+odd_nums = [0, 1, 2, 3, 4]
+odd_pro = [0.05, 0.55, 0.2, 0.15,0.05]
 
 MIN_IMG_MAX_SIDE = 350
 MAX_IMG_MAX_SIDE = 600
@@ -24,7 +24,7 @@ BG_COLOR = (255, 255, 255)
 MAX_CANVAS_SIZE = 2048
 
 
-MIN_SET_SIZE = 12
+MIN_SET_SIZE = 9
 MAX_SET_SIZE = 16
 
 

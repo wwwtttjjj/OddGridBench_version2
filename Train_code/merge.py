@@ -2,7 +2,6 @@ import json
 
 def merge_sft_files(file1_path, file2_path, output_file_path):
     """
-    合并两个 SFT 格式的 JSON 文件并保存到指定路径。
 
     参数：
         file1_path (str): 第一个 JSON 文件路径。

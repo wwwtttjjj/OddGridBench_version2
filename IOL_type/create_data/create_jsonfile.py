@@ -44,6 +44,7 @@ def main(arsg):
             "image_size": data.get("image_size", None),
             "grid_size": data.get("grid_size", None),
             "odd_rows_cols": odd_rows_cols,
+            "source":"icon"
         })
 
     # 保存为一个合并的 json

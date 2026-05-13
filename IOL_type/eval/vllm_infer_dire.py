@@ -102,7 +102,13 @@ def run_vllm_http(args):
 
         image_names = [data.get("image")]
         image_paths = [os.path.join(configs_para["image_dir"], img_name) for img_name in image_names]
-        prompt = build_prompt(data)
+        
+        if args.data_type in ["GOODADS", "RAD", "MPDD"]:
+            prompt = build_prompt_different_angle(data)
+        elif args.data_type in ["icon", "mnist", "hanzi"]:
+            prompt = build_prompt_same_angle_synthesis(data)
+        else:
+            prompt = build_prompt_same_angle_real(data)
 
         predict_answer = call_vllm_server(prompt, image_paths, model_path)
         extract_answer = extract_answer_from_response(predict_answer)
@@ -127,13 +133,14 @@ def run_vllm_http(args):
             "grid_size": str(data.get("grid_size")),
         }
         write_json(save_json_path, save_item)
+        break
 
     print(f"[INFO] ✅ Done! Saved results to {save_json_path}")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Run multimodal inference via vLLM Python API")
-    parser.add_argument("--model_name", type=str, default="oddgrid_sft_qwen3_vl_4b")
+    parser.add_argument("--model_name", type=str, default="Qwen3-VL-8B-Instruct")
     parser.add_argument(
         "--image_type",
         type=str,
@@ -143,8 +150,8 @@ def main():
     parser.add_argument(
         "--data_type",
         type=str,
-        default="mnist",
-        help="icon, mnist, hanzi"
+        default="RAD",
+        help="icon, mnist, hanzi,VisA, BTech, MVTEC, ELPV, GOODADS, RAD, MPDD, MVTEC_loco"
     )
 
     args = parser.parse_args()

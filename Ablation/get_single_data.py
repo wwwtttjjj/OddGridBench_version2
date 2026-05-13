@@ -89,14 +89,13 @@ def extract_original_images_and_record(source_data, json_path, output_root, data
             
     return local_metadata, count, anomaly_count
 
-def main(DATA_NAME, SOURCE_ROOT="../Other_data", TARGET_ROOT="single_data"):
+def main(DATA_NAME, SOURCE_ROOT="../Test_data", TARGET_ROOT="single_data"):
     SOURCE_ROOT = Path(SOURCE_ROOT)
     TARGET_DIR = Path(TARGET_ROOT)
     
     # 定义任务：(类型, 原始JSON路径)
     tasks = [
         ("iol", SOURCE_ROOT / DATA_NAME / "A_iol_type_data" / "all_iol_combined_metadata.json"),
-        ("soi", SOURCE_ROOT / DATA_NAME / "A_soi_type_data" / "all_soi_combined_metadata.json"),
     ]
     print(tasks)
     for d_type, json_path in tasks:
@@ -118,7 +117,7 @@ def main(DATA_NAME, SOURCE_ROOT="../Other_data", TARGET_ROOT="single_data"):
             print(f"   >> 已生成 JSON: {out_json_name} (拷贝 {c} 张)")
 
 if __name__ == "__main__":
-    datasets = ["VisA", "BTech_Dataset_transformed", "mvtec", "ELPV"]
+    datasets = ["VisA", "BTech_Dataset_transformed", "mvtec", "ELPV","MPDD","RAD", "GOODADS"]
     TARGET_PATH = Path("single_data")
     
     # 初始化清空目录
@@ -128,7 +127,6 @@ if __name__ == "__main__":
     
     TARGET_PATH.mkdir(parents=True, exist_ok=True)
 
-    # for ds in datasets:
-    #     main(ds)
-    main("Nanfang", SOURCE_ROOT="../Ablation_data")  # 处理 Ablation 数据集
+    for ds in datasets:
+        main(ds)
         

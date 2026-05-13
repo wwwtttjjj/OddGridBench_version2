@@ -2,8 +2,8 @@
 set -e 
 
 # 定义参数
-test_num=500
-val_num=500
+test_num=400
+val_num=400
 
 # 将所有需要运行的命令放入一个数组
 commands=(

@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-DATA_DIR = Path("../Train_data")
+DATA_DIR = Path("./")
 
 jsonl_files = sorted(DATA_DIR.glob("*.jsonl"))
 

@@ -47,7 +47,8 @@ def main(arsg):
             "odd_icons": data.get("odd_icons", []),
             "num_odds": data.get("num_odds", None),
             "block_size": data.get("block_size", None),
-            "odd_indices":odd_indices
+            "odd_indices":odd_indices,
+            "source":"icon",
             # "odd_rows_cols": odd_rows_cols,
         })
 

@@ -86,7 +86,12 @@ def run_vllm_http(args):
             # continue
         image_names = [data.get("image")]  # list of image paths
         image_paths = [os.path.join(configs_para["image_dir"], img_name) for img_name in image_names]
-        prompt = build_prompt(data)
+        if args.data_type in ["GOODADS", "RAD", "MPDD"]:
+            prompt = build_prompt_different_angle(data)
+        elif args.data_type in ["icon", "mnist", "hanzi"]:
+            prompt = build_prompt_same_angle_synthesis(data)
+        else:
+            prompt = build_prompt_same_angle_real(data)
 
         predict_answer = call_vllm_server(prompt, image_paths, model_path)
         extract_answer = extract_answer_from_response(predict_answer)
@@ -98,6 +103,15 @@ def run_vllm_http(args):
             col = odd.get("col")
             rows_cols.append((row, col))
             
+        if not data.get("source_cells", []):
+            total_count = len(data.get("source_cells", []))
+        else:
+            source_cells = data.get("source_cells", [])
+            total_count = sum(
+            1 for cell in source_cells
+            if cell.get("original_name") is not None
+            )
+              
         save_item = {
             "id": id,
             "image":data.get("image"),
@@ -107,17 +121,19 @@ def run_vllm_http(args):
             "extract_answer": extract_answer,
             "answer": rows_cols if rows_cols != [] else data.get("odd_rows_cols", []),
             "odd_list": odd_list,
+            "total_count": total_count,
             "odd_count": data.get("odd_count"),
             "grid_size": str(data.get("grid_size")),
         }
         write_json(save_json_path, save_item)
+        # break  # --- IGNORE: 先测试一条，确认流程正确 ---
 
     print(f"[INFO] ✅ Done! Saved results to {save_json_path}")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Run multimodal inference via vLLM HTTP API")
-    parser.add_argument("--model_name", type=str, default="Qwen3-VL-32B-Instruct")  # Qwen3-VL-2B-Instruct / Qwen3-VL-6B-Instruct
+    parser.add_argument("--model_name", type=str, default="Qwen3-VL-4B-Instruct")  # Qwen3-VL-2B-Instruct / Qwen3-VL-6B-Instruct
     parser.add_argument(
         "--image_type",
         type=str,
@@ -127,8 +143,8 @@ def main():
     parser.add_argument(
         "--data_type",
         type=str,
-        default="hanzi",
-        help="icon, mnist, hanzi, VisA, MVTEC, MVTEC_loco, BTech"
+        default="GOODADS",
+        help="icon, mnist, hanzi,VisA, BTech, MVTEC, ELPV, GOODADS, RAD, MPDD, MVTEC_loco"
     )
     
     args = parser.parse_args()
