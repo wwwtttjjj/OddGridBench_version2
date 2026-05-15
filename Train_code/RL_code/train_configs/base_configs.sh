@@ -1,9 +1,22 @@
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 TARGET_DIR=$(dirname "$(dirname "$(dirname "$SCRIPT_DIR")")")
 
-GPU_NUM=4
+GPU_NUM=$(python - <<'PY'
+import os
+visible = os.environ.get("CUDA_VISIBLE_DEVICES")
+if visible and visible.strip() != "-1":
+    print(len([x for x in visible.split(",") if x.strip()]))
+else:
+    try:
+        import torch
+        print(torch.cuda.device_count())
+    except Exception:
+        print(0)
+PY
+)
 
 VAL_PATH="$TARGET_DIR/Train_code/test_data.jsonl"
+# MAX_STEPS=150
 
 SOI_TRAIN_PATH="$TARGET_DIR/Train_code/train_soi_data.jsonl"
 IOL_TRAIN_PATH="$TARGET_DIR/Train_code/train_iol_data.jsonl"

@@ -133,7 +133,6 @@ def run_vllm_http(args):
             "grid_size": str(data.get("grid_size")),
         }
         write_json(save_json_path, save_item)
-        break
 
     print(f"[INFO] ✅ Done! Saved results to {save_json_path}")
 

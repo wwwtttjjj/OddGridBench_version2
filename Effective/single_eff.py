@@ -8,6 +8,10 @@ import time
 from tqdm import tqdm
 from pathlib import Path
 import re
+import sys
+# 允许从上级目录 import
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from Ablation.configs import extract_answer
 
 # ================= 基础配置 =================
 max_new_tokens = 2048
@@ -18,14 +22,60 @@ BASE_DATA_DIR = "../Ablation/single_data"
 SAVE_DIR_BASE = "./single_results"  # 结果保存根目录
 EXAMPLE_DIR = "../Ablation/examples"         # 示例图片根目录
 API_URL = "http://localhost:8081/v1/chat/completions"
-
 # ================= 工具函数 =================
 
-def extract_answer(predict_answer):
-    match = re.search(r'box\{(Yes|No)\}', predict_answer, re.IGNORECASE)
-    if match:
-        return match.group(1).capitalize()
-    return None
+def build_multimodal_prompt(mode, img_path, current_img_base64):
+    """构建多模态对话消息列表"""
+    messages = []
+    
+    # 1. 正常参考
+    if mode in ["one-example", "two-examples"]:
+        pos_path = find_example_image(img_path, target_type="Normal")
+        pos_b64 = encode_image(pos_path)
+        if pos_b64:
+            messages.append({"role": "user", "content": [
+                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{pos_b64}"}},
+                {"type": "text", "text": "This is a [Standard Normal Sample] without any defects. It serves as your quality baseline."}
+            ]})
+            messages.append({"role": "assistant", "content": "Understood. I have analyzed the normal sample and will use it as a reference."})
+
+    # 2. 异常参考
+    if mode == "two-examples":
+        neg_path = find_example_image(img_path, target_type="Anomaly")
+        neg_b64 = encode_image(neg_path)
+        if neg_b64:
+            messages.append({"role": "user", "content": [
+                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{neg_b64}"}},
+                {"type": "text", "text": "This is an [Anomalous Sample] that contains defects. Please note these irregular features."}
+            ]})
+            messages.append({"role": "assistant", "content": "Understood. I have identified the defective features for comparison."})
+
+    output_relu = f"""Strictly adhere to the following output rules\n
+    1.You may perform observation and comparative analysis before answering.
+    2. The FINAL ANSWER must be contained within exactly ONE \\boxed{{}} block.\n"""
+    # 3. 最终指令
+    if mode == "zero-shot":
+        instruction = f"""{output_relu}
+        3. Determine if there are any defects, and finally output the answer as boxed{{Yes}} or boxed{{No}}."""
+    elif mode == "one-example":
+        instruction = f"""
+        {output_relu}
+        3.Compared to the [Standard Normal Sample] provided earlier, does this image show any deviations or defects? 
+        4. Based on your analysis, output the final answer as boxed{{Yes}} or boxed{{No}}."""
+    else: # two-examples
+        instruction = f"""
+        {output_relu} 
+        3. By comparing it with both the [Standard Normal Sample] and the [Anomalous Sample] above, determine if this image is defective. 
+        4. Based on your comparison, output the final answer as boxed{{Yes}} or boxed{{No}}."""
+
+    messages.append({
+        "role": "user",
+        "content": [
+            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{current_img_base64}"}},
+            {"type": "text", "text": instruction}
+        ]
+    })
+    return messages
 
 def encode_image(image_path):
     if not image_path or not os.path.exists(image_path):
@@ -65,48 +115,6 @@ def find_example_image(original_path, target_type="Normal"):
             return potential_path
     return None
 
-def build_multimodal_prompt(mode, img_path, current_img_base64):
-    """构建多模态对话消息列表"""
-    messages = []
-    
-    # 1. 正常参考
-    if mode in ["one-example", "two-examples"]:
-        pos_path = find_example_image(img_path, target_type="Normal")
-        pos_b64 = encode_image(pos_path)
-        if pos_b64:
-            messages.append({"role": "user", "content": [
-                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{pos_b64}"}},
-                {"type": "text", "text": "This is a [Standard Normal Sample] without any defects. It serves as your quality baseline."}
-            ]})
-            messages.append({"role": "assistant", "content": "Understood. I have analyzed the normal sample and will use it as a reference."})
-
-    # 2. 异常参考
-    if mode == "two-examples":
-        neg_path = find_example_image(img_path, target_type="Anomaly")
-        neg_b64 = encode_image(neg_path)
-        if neg_b64:
-            messages.append({"role": "user", "content": [
-                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{neg_b64}"}},
-                {"type": "text", "text": "This is an [Anomalous Sample] that contains defects. Please note these irregular features."}
-            ]})
-            messages.append({"role": "assistant", "content": "Understood. I have identified the defective features for comparison."})
-
-    # 3. 最终指令
-    if mode == "zero-shot":
-        instruction = "Please analyze the visual features of this image first, determine if there are any defects, and finally output the answer as box{Yes} or box{No}."
-    elif mode == "one-example":
-        instruction = "Please analyze the current image first. Compared to the [Standard Normal Sample] provided earlier, does this image show any deviations or defects? Based on your analysis, output the final answer as box{Yes} or box{No}."
-    else: # two-examples
-        instruction = "Please analyze the current image first. By comparing it with both the [Standard Normal Sample] and the [Anomalous Sample] above, determine if this image is defective. Based on your comparison, output the final answer as box{Yes} or box{No}."
-
-    messages.append({
-        "role": "user",
-        "content": [
-            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{current_img_base64}"}},
-            {"type": "text", "text": instruction}
-        ]
-    })
-    return messages
 
 def call_vllm_api(messages, model_name):
     """通过 API 发送消息列表"""
@@ -179,7 +187,7 @@ def run_inference(data_type, dataset_name, model_name, sample_num, mode):
     time_list = []
     for meta_key, info in tqdm(valid_items):
         img_path = "../Ablation/" + info["physical_path"]
-        
+        print(f"\n[INFO] Processing: {img_path}")
         # 构建当前图片的 Base64
         current_b64 = encode_image(img_path)
         if not current_b64: continue
@@ -225,10 +233,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--type", type=str, default="iol")
     parser.add_argument("--dataset", type=str, default="mvtec")
-    parser.add_argument("--model_name", type=str, default="Qwen3-VL-32B-Instruct")
+    parser.add_argument("--model_name", type=str, default="Qwen3-VL-4B-Instruct")
     parser.add_argument("--sample_num", type=int, default=100)
     # 新增模式参数
-    parser.add_argument("--mode", type=str, default="zero-shot", 
+    parser.add_argument("--mode", type=str, default="one-example", 
                         choices=["zero-shot", "one-example", "two-examples"])
 
     args = parser.parse_args()

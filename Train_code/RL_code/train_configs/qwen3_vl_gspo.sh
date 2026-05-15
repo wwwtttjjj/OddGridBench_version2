@@ -30,7 +30,6 @@ python3 -m verl.trainer.main \
     data.format_prompt=./train_configs/format_prompt/oddgrid.jinja \
     worker.rollout.tensor_parallel_size=1 \
     trainer.n_gpus_per_node=${GPU_NUM} \
-    trainer.max_steps=100 \
     worker.actor.loss_type=gspo_token \
     worker.actor.loss_avg_mode=seq \
     worker.actor.clip_ratio_low=3e-4 \

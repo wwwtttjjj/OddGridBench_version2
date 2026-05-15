@@ -12,7 +12,6 @@ API_URL = "http://localhost:8081/v1/chat/completions"
 # =========================================
 
 
-
 def call_vllm_api(messages, model_name):
     """通过 HTTP API 调用部署好的 vLLM 服务"""
     # 这里的 model 字段需要与你启动 vllm serve 时指定的名称一致

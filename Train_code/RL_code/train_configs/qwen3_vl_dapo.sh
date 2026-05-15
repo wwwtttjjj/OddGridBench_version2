@@ -22,7 +22,7 @@ echo "Using training file: $TRAIN_TRAIN_PATH, model path: $MODEL_PATH, datatype:
 python3 -m verl.trainer.main \
     config=train_configs/config.yaml \
     data.train_files=${TRAIN_TRAIN_PATH} \
-    data.val_files=${TRAIN_VAL_PATH} \
+    data.val_files=${VAL_PATH} \
     worker.actor.model.model_path=${MODEL_PATH} \
     trainer.experiment_name=Qwen3_vl_${MODELTYPE}_${DATATYPE}_dapo \
     worker.actor.global_batch_size=256\
@@ -30,7 +30,6 @@ python3 -m verl.trainer.main \
     data.format_prompt=./train_configs/format_prompt/oddgrid.jinja\
     worker.rollout.tensor_parallel_size=1\
     trainer.n_gpus_per_node=${GPU_NUM}\
-    trainer.max_steps=100\
     data.mini_rollout_batch_size=128 \
     worker.actor.clip_ratio_low=0.2 \
     worker.actor.clip_ratio_high=0.28 \

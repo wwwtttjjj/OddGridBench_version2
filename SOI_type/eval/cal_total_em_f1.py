@@ -174,17 +174,19 @@ def eval_json_dir(json_dir: str, out_csv: str):
 # =========================
 if __name__ == "__main__":
     json_dirs = [
-        "mnist_output/",
-        "hanzi_output/",
-        "icon_output/",
-        "VisA_output/",
-        "BTech_output/",
-        "MVTEC_output/",
-        "ELPV_output/",
-        "nanfang_output/",
-        
+        "VisA_output", 
+        "BTech_output",
+        "MVTEC_output",
+        "BTech_output",
+        "ELPV_output",
+        "hanzi_output",
+        "icon_output",
+        "mnist_output",
+        "nanfang_output",
+        "MPDD_output",
+        "RAD_output",
+        "GOODADS_output",
     ]
-
     out_root = Path("results_emf1")
     out_root.mkdir(parents=True, exist_ok=True)
 

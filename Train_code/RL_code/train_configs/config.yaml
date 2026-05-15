@@ -9,15 +9,17 @@ data:
   video_fps: 2.0
   max_prompt_length: 8192
   max_response_length: 2048
-  rollout_batch_size: 512  # equivalent to verl's data.train_batch_size
+  rollout_batch_size: 256  # equivalent to verl's data.train_batch_size
   mini_rollout_batch_size: null  # equivalent to verl's data.gen_batch_size
-  val_batch_size: 1024
+  val_batch_size: 512
   format_prompt: ./train_configs/format_prompt/math.jinja
   override_chat_template: null
   shuffle: true
   seed: 1
   min_pixels: 10000
-  max_pixels: 1048576
+  # max_pixels: 1048576
+  max_pixels: 4164304
+
   filter_overlong_prompts: false
 
 algorithm:
@@ -86,11 +88,15 @@ worker:
 
   reward:
     reward_type: batch
-    reward_function: ./train_configs/reward_function/math.py:compute_score
+    # reward_function: ./train_configs/reward_function/math.py:compute_score
+    reward_function: ./train_configs/reward_function/math.py:compute_score_EM
+    # reward_function: ./train_configs/reward_function/math.py:compute_score_F1
+
+
 
 trainer:
   total_epochs: 2
-  max_steps: 100
+  max_steps: 200
   project_name: Anomaly_detection
   experiment_name: oddgrid_grpo
   logger: ["file", "wandb"]
@@ -99,13 +105,13 @@ trainer:
   nnodes: 1
   n_gpus_per_node: 4
   max_try_make_batch: 20  # -1 means no limit
-  val_freq: 10  # -1 to disable
+  val_freq: 20  # -1 to disable
   val_before_train: true
   val_only: false
   val_generations_to_log: 3
-  save_freq: 10  # -1 to disable
-  save_limit: 4  # -1 to disable
-  save_model_only: false
+  save_freq: -1  # -1 to disable
+  save_limit: -1  # -1 to disable
+  save_model_only: true
   save_checkpoint_path: null
   load_checkpoint_path: null
   find_last_checkpoint: true

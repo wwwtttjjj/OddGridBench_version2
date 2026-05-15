@@ -209,6 +209,26 @@ def compute_score(reward_inputs: list[dict[str, Any]], format_weight: float = 0.
 
     return scores
 
+def compute_score_F1(reward_inputs: list[dict[str, Any]], format_weight: float = 0.1) -> list[dict[str, float]]:
+    if not isinstance(reward_inputs, list):
+        raise ValueError("Please use `reward_type=batch` for math reward function.")
+    format_weight = 0.2
+    scores = []
+    for reward_input in reward_inputs:
+        response = re.sub(r"\s*(<|>|/)\s*", r"\1", reward_input["response"])  # handle qwen2.5vl-32b format
+        format_score = format_reward(response)
+        f1_score = f1_reward(response, reward_input["ground_truth"])
+
+        scores.append(
+            {
+                "overall": (1 - format_weight) * f1_score + format_weight * format_score,
+                "format": format_score,
+                "accuracy": f1_score,
+            }
+        )
+
+    return scores
+
 
 def compute_odd_score(reward_inputs: list[dict[str, Any]], format_weight: float = 0.1) -> list[dict[str, float]]:
     if not isinstance(reward_inputs, list):

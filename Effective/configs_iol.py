@@ -11,26 +11,35 @@ def get_configs(args):
         image_dir = "../create_data/test_data/image"
         json_path = "../create_data/test_data.json"
     elif args.data_type == "hanzi":
-        image_dir = "../Other_data/hanzi/iol_test_data/images"
-        json_path = "../Other_data/hanzi/iol_test_data/iol_test_data.json"
+        image_dir = "../Test_data/hanzi/iol_test_data/images"
+        json_path = "../Test_data/hanzi/iol_test_data/iol_test_data.json"
     elif args.data_type == "mnist":
-        image_dir = "../Other_data/mnist/iol_test_data/images"
-        json_path = "../Other_data/mnist/iol_test_data/iol_test_data.json"
+        image_dir = "../Test_data/mnist/iol_test_data/images"
+        json_path = "../Test_data/mnist/iol_test_data/iol_test_data.json"
     elif args.data_type == "VisA":
-        image_dir = "../Other_data/VisA/iol_test_data/images"
-        json_path = "../Other_data/VisA/iol_test_data/iol_test_data.json"
-    elif args.data_type == "BTech_Dataset_transformed":
-        image_dir = "../Other_data/BTech_Dataset_transformed/iol_test_data/images"
-        json_path = "../Other_data/BTech_Dataset_transformed/iol_test_data/iol_test_data.json"
+        image_dir = "../Test_data/VisA/iol_test_data/images"
+        json_path = "../Test_data/VisA/iol_test_data/iol_test_data.json"
+    elif args.data_type == "BTech":
+        image_dir = "../Test_data/BTech_Dataset_transformed/iol_test_data/images"
+        json_path = "../Test_data/BTech_Dataset_transformed/iol_test_data/iol_test_data.json"
     elif args.data_type == "MVTEC_loco":
-        image_dir = "../Other_data/mvtec_loco/iol_test_data/images"
-        json_path = "../Other_data/mvtec_loco/iol_test_data/iol_test_data.json"
+        image_dir = "../Test_data/mvtec_loco/iol_test_data/images"
+        json_path = "../Test_data/mvtec_loco/iol_test_data/iol_test_data.json"
     elif args.data_type == "MVTEC":
-        image_dir = "../Other_data/mvtec/iol_test_data/images"
-        json_path = "../Other_data/mvtec/iol_test_data/iol_test_data.json"
+        image_dir = "../Test_data/mvtec/iol_test_data/images"
+        json_path = "../Test_data/mvtec/iol_test_data/iol_test_data.json"
     elif args.data_type == "ELPV":
-        image_dir = "../Other_data/ELPV/iol_test_data/images"
-        json_path = "../Other_data/ELPV/iol_test_data/iol_test_data.json"
+        image_dir = "../Test_data/ELPV/iol_test_data/images"
+        json_path = "../Test_data/ELPV/iol_test_data/iol_test_data.json"
+    elif args.data_type == "GOODADS":
+        image_dir = "../Test_data/GOODADS/iol_test_data/images"
+        json_path = "../Test_data/GOODADS/iol_test_data/iol_test_data.json"
+    elif args.data_type == "RAD":
+        image_dir = "../Test_data/RAD/iol_test_data/images"
+        json_path = "../Test_data/RAD/iol_test_data/iol_test_data.json"
+    elif args.data_type == "MPDD":
+        image_dir = "../Test_data/MPDD/iol_test_data/images"
+        json_path = "../Test_data/MPDD/iol_test_data/iol_test_data.json"
 
     # 输出路径
     Result_root = "iol_output/"

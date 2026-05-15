@@ -3,11 +3,10 @@ set -e  # 遇到任何错误立即停止，防止错误的数据进入评估
 
 # 1. 定义你要跑的数据集
 # datasets=(VisA BTech_Dataset_transformed MVTEC ELPV)
-datasets=(MVTEC ELPV)
-
+datasets=(VisA BTech MVTEC ELPV GOODADS RAD MPDD)
 
 # 2. 定义公共参数
-model="Qwen3-VL-32B-Instruct"
+model="Qwen3-VL-4B-Instruct"
 sample_num=100
 
 # 单循环开始
