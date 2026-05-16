@@ -43,7 +43,6 @@ worker:
     dynamic_batching: true
     ulysses_size: 1
     model:
-      model_path: Qwen/Qwen3-VL-2B-Instruct
       enable_gradient_checkpointing: true
       trust_remote_code: false
       freeze_vision_tower: false
@@ -89,7 +88,6 @@ worker:
   reward:
     reward_type: batch
     # reward_function: ./train_configs/reward_function/math.py:compute_score
-    reward_function: ./train_configs/reward_function/math.py:compute_score_EM
     # reward_function: ./train_configs/reward_function/math.py:compute_score_F1
 
 
@@ -98,7 +96,6 @@ trainer:
   total_epochs: 2
   max_steps: 200
   project_name: Anomaly_detection
-  experiment_name: oddgrid_grpo
   logger: ["file", "wandb"]
   # logger: ["file"]
 

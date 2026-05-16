@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
 # DATA_TYPES=(icon mnist hanzi VisA BTech MVTEC_loco MVTEC)
-source /jiangwenhao/wengtengjin/oddgrid_task/env/Internvl/bin/activate
+source /nfsdata4/wengtengjin/oddgrid_task/env/qwen35_vllm/bin/activate
+
+export CUDA_VISIBLE_DEVICES=4,5,6,7
 
 # DATA_TYPES=(VisA BTech MVTEC_loco MVTEC mnist hanzi)
-DATA_TYPES=(VisA BTech MVTEC)
+DATA_TYPES=(VisA BTech MVTEC ELPV GOODADS RAD MPDD icon mnist hanzi MVTEC_loco)
 
 
 MODELS=(
@@ -22,3 +24,4 @@ for data_type in "${DATA_TYPES[@]}"; do
       --data_type "${data_type}"
   done
 done
+#nohup bash eval_internvl3.sh > internvl3_eval.log 2>&1 &

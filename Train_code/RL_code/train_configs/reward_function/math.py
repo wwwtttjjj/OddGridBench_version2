@@ -189,7 +189,7 @@ def format_reward(response: str) -> float:
     return 1.0 if format_match else 0.0
 
 
-def compute_score(reward_inputs: list[dict[str, Any]], format_weight: float = 0.1) -> list[dict[str, float]]:
+def compute_score_EM(reward_inputs: list[dict[str, Any]], format_weight: float = 0.1) -> list[dict[str, float]]:
     if not isinstance(reward_inputs, list):
         raise ValueError("Please use `reward_type=batch` for math reward function.")
     format_weight = 0.2

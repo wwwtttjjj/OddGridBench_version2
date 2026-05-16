@@ -217,7 +217,8 @@ def save_markdown_report(all_results, datasets, out_path):
 if __name__ == "__main__":
     json_dirs = [
         "mnist_output", "hanzi_output", "icon_output", "BTech_output",
-        "MVTEC_loco_output", "ELPV_output", "MVTEC_output", "VisA_output"
+        "MVTEC_loco_output", "ELPV_output", "MVTEC_output", "VisA_output",
+        "GOODADS_output","MPDD_output","RAD_output"
     ]
 
     out_root = Path("results_total")
