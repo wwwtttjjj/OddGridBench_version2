@@ -12,6 +12,9 @@ from utils_iol import *
 
 API_URL = "http://localhost:8081/v1/chat/completions"
 
+def is_qwen35_model(model_path):
+    return "qwen3.5" in os.path.basename(model_path).lower()
+
 
 def call_vllm_server(prompt, image_paths, model_path):
     messages = [{"role": "user", "content": []}]
@@ -36,16 +39,20 @@ def call_vllm_server(prompt, image_paths, model_path):
         "temperature": 0.0,
     }
 
+    if is_qwen35_model(model_path):
+        payload["chat_template_kwargs"] = {"enable_thinking": False}
+
     resp = None
     try:
         resp = requests.post(API_URL, json=payload, timeout=600)
         resp.raise_for_status()
         data = resp.json()
-        return data["choices"][0]["message"]["content"]
+        usage = data.get("usage", {})
+        return data["choices"][0]["message"]["content"], usage
     except Exception as e:
         msg = resp.text[:300] if resp is not None else str(e)
         print(f"[ERROR] vLLM request failed: {msg}")
-        return None
+        return None, {}
 
 
 def run_vllm_http(args):
@@ -91,19 +98,23 @@ def run_vllm_http(args):
 
     # ===== 推理 =====
     time_list = []
+    token_list = []
+    image_count_list = []
 
     for data in tqdm(valid_data):
         id = data.get("id")
 
         image_names = [data.get("image")]
         image_paths = [os.path.join(configs_para["image_dir"], img_name) for img_name in image_names]
+        grid_size = data.get("grid_size") or [1, 1]
+        image_count = grid_size[0] * grid_size[1] if isinstance(grid_size, (list, tuple)) and len(grid_size) >= 2 else 1
 
         prompt = build_prompt(data)
 
         # ===== 单条计时 =====
         start_time = time.time()
 
-        predict_answer = call_vllm_server(prompt, image_paths, model_path)
+        predict_answer, usage = call_vllm_server(prompt, image_paths, model_path)
 
         end_time = time.time()
         elapsed_time = end_time - start_time
@@ -132,11 +143,17 @@ def run_vllm_http(args):
             "grid_size": str(data.get("grid_size")),
 
             # 🔥 新增
-            "inference_time": elapsed_time
+            "inference_time": elapsed_time,
+            "prompt_tokens": usage.get("prompt_tokens"),
+            "completion_tokens": usage.get("completion_tokens"),
+            "total_tokens": usage.get("total_tokens")
         }
 
         all_results.append(save_item)
         time_list.append(elapsed_time)
+        if usage.get("total_tokens") is not None:
+            token_list.append(usage["total_tokens"])
+            image_count_list.append(image_count)
 
         # ===== 实时保存 =====
         with open(save_json_path, "w", encoding="utf-8") as f:
@@ -159,6 +176,11 @@ def run_vllm_http(args):
         print(f"P50: {p50:.3f}s")
         print(f"P95: {p95:.3f}s")
         print(f"总耗时: {total_time:.2f}s")
+        if token_list:
+            total_tokens = sum(token_list)
+            total_images = sum(image_count_list)
+            print(f"总token: {total_tokens}")
+            print(f"平均每图token: {total_tokens / total_images:.2f}")
 
     print(f"\n[SUCCESS] Saved to {save_json_path}")
 

@@ -1,4 +1,5 @@
 import os
+os.environ.setdefault("VLLM_USE_V1", "0")
 import argparse
 import json
 import base64
@@ -130,7 +131,7 @@ def run_vllm_http(args):
 
 def main():
     parser = argparse.ArgumentParser(description="Run multimodal inference via vLLM Python API")
-    parser.add_argument("--model_name", type=str, default="Qwen3-VL-4B-Instruct")
+    parser.add_argument("--model_name", type=str, default="InternVL3_5-38B")
     parser.add_argument(
         "--image_type",
         type=str,
@@ -140,8 +141,8 @@ def main():
     parser.add_argument(
         "--data_type",
         type=str,
-        default="nanfang",
-                help="icon, mnist, hanzi,VisA, BTech, MVTEC, ELPV, GOODADS, RAD, MPDD"
+        default="VisA",
+        help="icon, mnist, hanzi,VisA, BTech, MVTEC, ELPV, GOODADS, RAD, MPDD"
     )
 
     args = parser.parse_args()

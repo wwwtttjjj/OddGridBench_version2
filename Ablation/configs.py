@@ -2,6 +2,8 @@ import os
 import os
 import json
 import base64
+from io import BytesIO
+from PIL import Image
 import re
 import glob
 from tqdm import tqdm
@@ -35,8 +37,12 @@ def extract_answer(predict_answer):
 def encode_image(image_path):
     if not os.path.exists(image_path):
         return None
-    with open(image_path, "rb") as f:
-        return base64.b64encode(f.read()).decode("utf-8")
+    with Image.open(image_path) as img:
+        if img.mode not in ("RGB", "RGBA"):
+            img = img.convert("RGB")
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+        return base64.b64encode(buf.getvalue()).decode("utf-8")
 
 
 def find_example_image(original_path, target_type="Normal"):

@@ -1,4 +1,5 @@
 import os
+os.environ.setdefault("VLLM_USE_V1", "0")
 import json
 import base64
 import requests
@@ -10,6 +11,9 @@ from configs import BASE_DATA_DIR, SAVE_DIR, MODEL_PATH, max_new_tokens, build_m
 # ================= 配置区 =================
 API_URL = "http://localhost:8081/v1/chat/completions"
 # =========================================
+
+def is_qwen35_model(model_name):
+    return "qwen3.5" in os.path.basename(model_name).lower()
 
 
 def call_vllm_api(messages, model_name):
@@ -23,6 +27,9 @@ def call_vllm_api(messages, model_name):
         "temperature": 0.0,
         "max_tokens": max_new_tokens,
     }
+
+    if is_qwen35_model(model_name):
+        payload["chat_template_kwargs"] = {"enable_thinking": False}
 
     try:
         response = requests.post(API_URL, json=payload, timeout=300)

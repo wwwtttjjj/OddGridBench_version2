@@ -1,7 +1,10 @@
 import os
+os.environ.setdefault("VLLM_USE_V1", "0")
 import argparse
 import json
 import base64
+from io import BytesIO
+from PIL import Image
 from tqdm import tqdm
 import torch
 from configs import get_configs, max_new_tokens
@@ -9,22 +12,85 @@ from utils import *
 
 # ===== 新增：vLLM =====
 from vllm import LLM, SamplingParams
+from types import SimpleNamespace
 
 # ===============================
 # vLLM 初始化（全局，只初始化一次）
 # ===============================
 _VLLM_MODEL = None
 
+def is_qwen35_model(model_path):
+    return "qwen3.5" in os.path.basename(model_path).lower()
+
+
+def is_gemma4_model(model_path):
+    return os.path.basename(model_path).lower().startswith("gemma-4")
+
+
+def needs_transformers_fallback(model_path):
+    return is_qwen35_model(model_path) or is_gemma4_model(model_path)
+
+
+class TransformersChatModel:
+    def __init__(self, model_path):
+        from transformers import AutoModelForImageTextToText, AutoProcessor
+
+        self.processor = AutoProcessor.from_pretrained(
+            model_path,
+            trust_remote_code=True,
+        )
+        self.model = AutoModelForImageTextToText.from_pretrained(
+            model_path,
+            trust_remote_code=True,
+            torch_dtype=torch.bfloat16,
+            device_map="auto",
+        )
+        self.model.eval()
+
+    def chat(self, messages, sampling_params, **kwargs):
+        template_kwargs = kwargs.pop("chat_template_kwargs", {})
+        kwargs.update(template_kwargs)
+        inputs = self.processor.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+            tokenize=True,
+            return_dict=True,
+            return_tensors="pt",
+            **kwargs,
+        )
+        inputs = {
+            key: value.to(self.model.device) if hasattr(value, "to") else value
+            for key, value in inputs.items()
+        }
+        input_len = inputs["input_ids"].shape[-1]
+        with torch.inference_mode():
+            generated = self.model.generate(
+                **inputs,
+                do_sample=False,
+                max_new_tokens=sampling_params.max_tokens,
+            )
+        text = self.processor.decode(
+            generated[0][input_len:],
+            skip_special_tokens=True,
+        )
+        return [SimpleNamespace(outputs=[SimpleNamespace(text=text)])]
+
 
 def get_vllm_model(model_path):
     global _VLLM_MODEL
     tp = torch.cuda.device_count()
     if _VLLM_MODEL is None:
+        if needs_transformers_fallback(model_path):
+            print(f"[INFO] {os.path.basename(model_path)} is not supported by vLLM 0.8.x; using Transformers fallback.")
+            _VLLM_MODEL = TransformersChatModel(model_path)
+            return _VLLM_MODEL
+
         _VLLM_MODEL = LLM(
             model=model_path,
             max_model_len=12000,
             trust_remote_code=True,
             tensor_parallel_size=tp,
+            gpu_memory_utilization=0.8,
         )
     return _VLLM_MODEL
 
@@ -35,8 +101,12 @@ def call_vllm_server(prompt, image_paths, model_path):
     content = []
 
     for img_path in image_paths:
-        with open(img_path, "rb") as f:
-            b64 = base64.b64encode(f.read()).decode("utf-8")
+        with Image.open(img_path) as img:
+            if img.mode not in ("RGB", "RGBA"):
+                img = img.convert("RGB")
+            buf = BytesIO()
+            img.save(buf, format="PNG")
+            b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
         content.append({
             "type": "image_url",
             "image_url": {
@@ -60,9 +130,14 @@ def call_vllm_server(prompt, image_paths, model_path):
     )
 
     try:
+        chat_kwargs = {}
+        if is_qwen35_model(model_path):
+            chat_kwargs["chat_template_kwargs"] = {"enable_thinking": False}
+
         outputs = llm.chat(
             messages=messages,
             sampling_params=sampling_params,
+            **chat_kwargs,
         )
         return outputs[0].outputs[0].text
     except Exception as e:

@@ -1,14 +1,6 @@
 #!/usr/bin/env bash
 
-# DATA_TYPES=(icon mnist hanzi VisA BTech MVTEC_loco MVTEC)
-# source /jiangwenhao/wengtengjin/oddgrid_task/env/easyr1/bin/activate
-# DATA_TYPES=(VisA BTech MVTEC_loco MVTEC mnist hanzi)
-
-# DATA_TYPES=(VisA BTech MVTEC mnist hanzi ELPV icon)
-# DATA_TYPES=(VisA BTech MVTEC ELPV GOODADS RAD MPDD icon mnist hanzi)
-DATA_TYPES=(GOODADS RAD MPDD icon mnist hanzi)
-
-
+DATA_TYPES=(BTech)
 MODELS=(
   Qwen3-VL-4B-Instruct
   Qwen3-VL-32B-Instruct

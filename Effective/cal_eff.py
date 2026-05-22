@@ -32,6 +32,7 @@ def process_file(file_path, data_type):
         data = json.load(f)
 
     total_time = 0
+    total_tokens = 0
     total_images = 0
 
     for item in data:
@@ -40,8 +41,11 @@ def process_file(file_path, data_type):
             continue
 
         num_images = get_num_images(item, data_type)
+        tokens = item.get("total_tokens")
 
         total_time += t
+        if tokens is not None:
+            total_tokens += tokens
         total_images += num_images
 
     if total_images == 0:
@@ -52,7 +56,9 @@ def process_file(file_path, data_type):
         "samples": len(data),
         "total_images": total_images,
         "total_time": round(total_time, 4),
-        "avg_per_image_time": round(total_time / total_images, 2)
+        "avg_per_image_time": round(total_time / total_images, 2),
+        "total_tokens": total_tokens,
+        "avg_per_image_tokens": round(total_tokens / total_images, 2)
     }
 
 
@@ -85,7 +91,9 @@ def main():
                 "samples",
                 "total_images",
                 "total_time",
-                "avg_per_image_time"
+                "avg_per_image_time",
+                "total_tokens",
+                "avg_per_image_tokens"
             ])
             writer.writeheader()
             writer.writerows(rows)

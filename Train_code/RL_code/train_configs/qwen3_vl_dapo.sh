@@ -8,9 +8,9 @@ TARGET_DIR=$(dirname "$(dirname "$(dirname "$SCRIPT_DIR")")")
 source "$SCRIPT_DIR/base_configs.sh"
 
 
-DATATYPE="TOTAL" #SOI, IOL, SYS, REAL, TOTAL
-MODELTYPE="4B"   # 2B, 4B, 8B
-FUNCTION_TYPE="EM" # EM, F1
+DATATYPES=("SOI" "IOL" "SYS" "REAL")
+MODELTYPES=("4B")
+FUNCTION_TYPES=("EM")
 
 VAR_NAME_1="${DATATYPE}_TRAIN_PATH"
 TRAIN_TRAIN_PATH="${!VAR_NAME_1}"
@@ -26,7 +26,7 @@ python3 -m verl.trainer.main \
     data.val_files=${VAL_PATH} \
     worker.actor.model.model_path=${MODEL_PATH} \
     trainer.experiment_name=Qwen3_vl_${MODELTYPE}_${DATATYPE}_${FUNCTION_TYPE}_dapo \
-    reward.reward_function=./train_configs/reward_function/math.py:compute_score_${FUNCTION_TYPE} \
+    worker.reward.reward_function=./train_configs/reward_function/math.py:compute_score_${FUNCTION_TYPE} \
     worker.actor.global_batch_size=256\
     worker.actor.micro_batch_size_per_device_for_update=2\
     data.format_prompt=./train_configs/format_prompt/oddgrid.jinja\

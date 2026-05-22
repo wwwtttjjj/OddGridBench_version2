@@ -2,13 +2,20 @@
 set -euo pipefail
 set -x
 
+wandb login 195651cd9cf6fd812ec326a663dbcf7e518b29c2
+
+
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 TARGET_DIR=$(dirname "$(dirname "$(dirname "$SCRIPT_DIR")")")
 source "$SCRIPT_DIR/base_configs.sh"
 
-DATATYPES=("SOI" "IOL" "SYS" "REAL" "TOTAL")
-MODELTYPES=("2B" "4B" "8B")
-FUNCTION_TYPES=("EM" "F1")
+# DATATYPES=("SOI" "IOL" "SYS" "REAL" "TOTAL")
+# MODELTYPES=("2B" "4B" "8B")
+# FUNCTION_TYPES=("EM" "F1")
+
+DATATYPES=("SOI" "IOL" "SYS" "REAL")
+MODELTYPES=("4B")
+FUNCTION_TYPES=("EM")
 
 for DATATYPE in "${DATATYPES[@]}"; do
   for MODELTYPE in "${MODELTYPES[@]}"; do
@@ -26,8 +33,8 @@ for DATATYPE in "${DATATYPES[@]}"; do
         data.train_files="${TRAIN_TRAIN_PATH}" \
         data.val_files="${VAL_PATH}" \
         worker.actor.model.model_path="${MODEL_PATH}" \
+        worker.reward.reward_function=./train_configs/reward_function/math.py:compute_score_${FUNCTION_TYPE} \
         trainer.experiment_name="Qwen3_vl_${MODELTYPE}_${DATATYPE}_${FUNCTION_TYPE}_grpo" \
-        reward.reward_function="./train_configs/reward_function/math.py:compute_score_${FUNCTION_TYPE}" \
         worker.actor.global_batch_size=256 \
         worker.actor.micro_batch_size_per_device_for_update=2 \
         data.format_prompt=./train_configs/format_prompt/oddgrid.jinja \

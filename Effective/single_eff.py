@@ -24,6 +24,9 @@ EXAMPLE_DIR = "../Ablation/examples"         # 示例图片根目录
 API_URL = "http://localhost:8081/v1/chat/completions"
 # ================= 工具函数 =================
 
+def is_qwen35_model(model_name):
+    return "qwen3.5" in os.path.basename(model_name).lower()
+
 def build_multimodal_prompt(mode, img_path, current_img_base64):
     """构建多模态对话消息列表"""
     messages = []
@@ -126,14 +129,18 @@ def call_vllm_api(messages, model_name):
         "max_tokens": max_new_tokens,
     }
 
+    if is_qwen35_model(model_name):
+        payload["chat_template_kwargs"] = {"enable_thinking": False}
+
     try:
         response = requests.post(API_URL, json=payload, timeout=300)
         response.raise_for_status()
         data = response.json()
-        return data["choices"][0]["message"]["content"]
+        usage = data.get("usage", {})
+        return data["choices"][0]["message"]["content"], usage
     except Exception as e:
         print(f"\n[ERROR] API 请求失败: {e}")
-        return None
+        return None, {}
 
 # ================= 主推理函数 =================
 
@@ -185,6 +192,8 @@ def run_inference(data_type, dataset_name, model_name, sample_num, mode):
     print(f"\n[START] Mode: {mode} | {dataset_name} | {model_name} | Samples: {len(valid_items)}")
 
     time_list = []
+    token_list = []
+    image_count_list = []
     for meta_key, info in tqdm(valid_items):
         img_path = "../Ablation/" + info["physical_path"]
         print(f"\n[INFO] Processing: {img_path}")
@@ -196,7 +205,7 @@ def run_inference(data_type, dataset_name, model_name, sample_num, mode):
         messages = build_multimodal_prompt(mode, img_path, current_b64)
 
         start_time = time.time()
-        predict_answer = call_vllm_api(messages, model_name)
+        predict_answer, usage = call_vllm_api(messages, model_name)
         elapsed_time = time.time() - start_time
 
         if predict_answer is None: continue
@@ -214,12 +223,18 @@ def run_inference(data_type, dataset_name, model_name, sample_num, mode):
             "dataset_name": dataset_name,
             "model_name": model_name,
             "inference_time": elapsed_time,
+            "prompt_tokens": usage.get("prompt_tokens"),
+            "completion_tokens": usage.get("completion_tokens"),
+            "total_tokens": usage.get("total_tokens"),
             "resize_scale": info.get("resize_scale"),
             "original_count": info.get("count")
         }
 
         all_results.append(res_item)
         time_list.append(elapsed_time)
+        if usage.get("total_tokens") is not None:
+            token_list.append(usage["total_tokens"])
+            image_count_list.append(1)
 
         with open(save_path, "w", encoding="utf-8") as f:
             json.dump(all_results, f, ensure_ascii=False, indent=4)
@@ -228,6 +243,10 @@ def run_inference(data_type, dataset_name, model_name, sample_num, mode):
     total_time = time.time() - global_start
     if time_list:
         print(f"\n[DONE] Avg: {sum(time_list)/len(time_list):.3f}s | Total: {total_time:.2f}s")
+        if token_list:
+            total_tokens = sum(token_list)
+            total_images = sum(image_count_list)
+            print(f"[TOKENS] Total: {total_tokens} | Avg/Image: {total_tokens / total_images:.2f}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

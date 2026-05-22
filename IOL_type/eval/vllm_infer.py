@@ -1,4 +1,5 @@
 import os
+os.environ.setdefault("VLLM_USE_V1", "0")
 import argparse
 import json
 import base64
@@ -10,6 +11,9 @@ from utils import *
 
 # 可以按需改成环境变量
 API_URL = "http://localhost:8081/v1/chat/completions"
+
+def is_qwen35_model(model_path):
+    return "qwen3.5" in os.path.basename(model_path).lower()
 
 def call_vllm_server(prompt, image_paths, model_path):
     """通过 vLLM REST API 调用模型"""
@@ -36,6 +40,9 @@ def call_vllm_server(prompt, image_paths, model_path):
         "max_tokens": max_new_tokens,
         "temperature": 0.0,
     }
+
+    if is_qwen35_model(model_path):
+        payload["chat_template_kwargs"] = {"enable_thinking": False}
 
     resp = None
     try:
