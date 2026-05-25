@@ -18,14 +18,14 @@ MODEL_ROWS = [
     ("Qwen3-VL-4B", "Qwen3-VL-4B-Instruct"),
     ("Qwen3-VL-8B", "Qwen3-VL-8B-Instruct"),
     ("Qwen3-VL-32B", "Qwen3-VL-32B-Instruct"),
-    ("Qwen3.5-2B", "Qwen3.5-2B"),
-    ("Qwen3.5-4B", "Qwen3.5-4B"),
-    ("Qwen3.5-9B", "Qwen3.5-9B"),
-    ("Qwen3.5-27B", "Qwen3.5-27B"),
     ("Gemma4-E2B-it", "gemma-4-E2B-it"),
     ("Gemma4-E4B-it", "gemma-4-E4B-it"),
     ("Gemma4-26B-A4B-it", "gemma-4-26B-A4B-it"),
     ("Gemma4-31B-it", "gemma-4-31B-it"),
+    ("Qwen3.5-2B", "Qwen3.5-2B"),
+    ("Qwen3.5-4B", "Qwen3.5-4B"),
+    ("Qwen3.5-9B", "Qwen3.5-9B"),
+    ("Qwen3.5-27B", "Qwen3.5-27B"),
 ]
 
 SYNTHETIC = [("ICON", ["icon_output"]), ("MNIST", ["mnist_output"]), ("Hanzi", ["hanzi_output"])]

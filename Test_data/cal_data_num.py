@@ -2,30 +2,60 @@ import json
 from pathlib import Path
 
 
-def count_real_source_images(data):
-    if not isinstance(data, list):
-        return 0
+ABNORMAL_LABELS = {"abnormal", "anomaly", "defect", "defective", "ng", "odd"}
+NORMAL_LABELS = {"normal", "good", "ok"}
 
-    total = 0
+
+def empty_image_counts():
+    return {"normal": 0, "abnormal": 0, "total": 0}
+
+
+def add_image_count(counts, label):
+    counts["total"] += 1
+    normalized = str(label or "").strip().lower()
+    if normalized in NORMAL_LABELS:
+        counts["normal"] += 1
+    elif normalized in ABNORMAL_LABELS:
+        counts["abnormal"] += 1
+
+
+def count_real_source_images(data):
+    counts = empty_image_counts()
+    if not isinstance(data, list):
+        return counts
+
     for entry in data:
         if "source_cells" in entry:
             for cell in entry.get("source_cells", []):
                 if cell.get("original_name") is not None:
-                    total += 1
+                    add_image_count(counts, cell.get("label"))
         elif "source_images_details" in entry:
             for image_detail in entry.get("source_images_details", []):
                 if image_detail.get("original_filename") is not None:
-                    total += 1
+                    add_image_count(counts, image_detail.get("label"))
 
-    return total
+    return counts
+
+
+def add_counts(total_counts, current_counts):
+    for key in ("normal", "abnormal", "total"):
+        total_counts[key] += current_counts[key]
+
+
+def format_image_counts(counts):
+    if isinstance(counts, dict):
+        return "{:<12} | {:<12} | {:<12}".format(
+            counts["normal"], counts["abnormal"], counts["total"]
+        )
+    return "{:<12} | {:<12} | {:<12}".format(str(counts), str(counts), str(counts))
 
 
 def count_combined_statistics(root_dir="."):
     root_path = Path(root_dir)
     total_iol = 0
     total_soi = 0
-    total_iol_images = 0
-    total_soi_images = 0
+    total_iol_images = empty_image_counts()
+    total_soi_images = empty_image_counts()
 
     task_map = {
         "IOL": "iol_test_data/iol_test_data.json",
@@ -33,9 +63,11 @@ def count_combined_statistics(root_dir="."):
     }
 
     header = (
-        f"{'Dataset Name':<25} | "
-        f"{'IOL Count':<12} | {'IOL Images':<12} | "
-        f"{'SOI Count':<12} | {'SOI Images':<12}"
+        "{:<25} | ".format("Dataset Name")
+        + "{:<12} | ".format("IOL Count")
+        + "{:<12} | {:<12} | {:<12} | ".format("IOL Normal", "IOL Abnormal", "IOL Images")
+        + "{:<12} | ".format("SOI Count")
+        + "{:<12} | {:<12} | {:<12}".format("SOI Normal", "SOI Abnormal", "SOI Images")
     )
     print(header)
     print("-" * len(header))
@@ -44,7 +76,7 @@ def count_combined_statistics(root_dir="."):
 
     for subdir in subdirs:
         counts = {"IOL": 0, "SOI": 0}
-        image_counts = {"IOL": 0, "SOI": 0}
+        image_counts = {"IOL": empty_image_counts(), "SOI": empty_image_counts()}
         has_data = False
 
         for task_label, rel_path in task_map.items():
@@ -63,10 +95,10 @@ def count_combined_statistics(root_dir="."):
 
                     if task_label == "IOL":
                         total_iol += current_count
-                        total_iol_images += current_image_count
+                        add_counts(total_iol_images, current_image_count)
                     else:
                         total_soi += current_count
-                        total_soi_images += current_image_count
+                        add_counts(total_soi_images, current_image_count)
                 except Exception:
                     counts[task_label] = "Error"
                     image_counts[task_label] = "Error"
@@ -76,16 +108,16 @@ def count_combined_statistics(root_dir="."):
 
         if has_data:
             print(
-                f"{subdir.name:<25} | "
-                f"{str(counts['IOL']):<12} | {str(image_counts['IOL']):<12} | "
-                f"{str(counts['SOI']):<12} | {str(image_counts['SOI']):<12}"
+                "{:<25} | ".format(subdir.name)
+                + "{:<12} | {} | ".format(str(counts["IOL"]), format_image_counts(image_counts["IOL"]))
+                + "{:<12} | {}".format(str(counts["SOI"]), format_image_counts(image_counts["SOI"]))
             )
 
     print("-" * len(header))
     print(
-        f"{'TOTAL SAMPLES':<25} | "
-        f"{total_iol:<12} | {total_iol_images:<12} | "
-        f"{total_soi:<12} | {total_soi_images:<12}"
+        "{:<25} | ".format("TOTAL SAMPLES")
+        + "{:<12} | {} | ".format(total_iol, format_image_counts(total_iol_images))
+        + "{:<12} | {}".format(total_soi, format_image_counts(total_soi_images))
     )
 
 

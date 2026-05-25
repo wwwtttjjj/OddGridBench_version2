@@ -37,3 +37,49 @@
 *.log
 *.pt
 *.yaml
+*.tex
+*.csv
+*.wandb
+
+# Training/runtime artifacts
+wandb/
+**/wandb/
+**/checkpoints/
+**/output/
+**/outputs/
+**/runs/
+
+# Generated data artifacts
+IOL_type/create_data/svg_file_train/
+IOL_type/create_data/svg_file_test/
+*.nfs*
+
+# Large local datasets and generated eval results
+Train_data/
+Test_data/
+Ablation/examples/
+Ablation/single_data/
+Ablation/results_*/
+Ablation/final_results/
+SOI_type/create_data/train_data/
+SOI_type/create_data/test_data/
+SOI_type/create_data/val_data/
+SOI_type/eval/*_output/
+SOI_type/eval/results_*/
+IOL_type/create_data/train_data/
+IOL_type/create_data/test_data/
+IOL_type/create_data/val_data/
+IOL_type/eval/*_output/
+IOL_type/eval/results_*/
+
+# Additional local data and output directories
+__pycache__/
+Effective/iol_output/
+Effective/soi_output/
+Effective/results/
+Effective/single_results_*/
+Raw_data/MVTEC_LOCO/
+Raw_data/mvtec_ad_2/
+Raw_data/Other_data_Old/*/
+Train_code/ms_swift_rl/data/
+Train_code/SFT_code/examples/deepspeed/

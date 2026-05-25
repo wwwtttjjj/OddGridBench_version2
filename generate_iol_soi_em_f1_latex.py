@@ -34,6 +34,12 @@ DATASET_DISPLAY_NAMES = {
 }
 
 MODEL_SIZE_RE = re.compile(r"(\d+(?:\.\d+)?)B", re.IGNORECASE)
+MODEL_GROUP_ORDER = {
+    "InternVL": 0,
+    "Qwen3-VL": 1,
+    "Gemma": 2,
+    "Qwen3.5": 3,
+}
 
 
 def latex_escape(text):
@@ -144,12 +150,19 @@ def model_group(model_name):
     return model_name.split("-")[0]
 
 
+def reorder_model_rows(data_rows):
+    return sorted(
+        enumerate(data_rows),
+        key=lambda item: (MODEL_GROUP_ORDER.get(model_group(item[1][0].strip()), 99), item[0]),
+    )
+
+
 def make_latex_table(rows, task_name, bold_best=True, underline_small_best=True):
     if len(rows) < 4:
         raise ValueError("CSV must contain three header rows and at least one data row")
 
     header1, header2, header3 = rows[:3]
-    data_rows = rows[3:]
+    data_rows = [row for _, row in reorder_model_rows(rows[3:])]
     col_count = max(len(r) for r in rows)
     for row in rows:
         row.extend([""] * (col_count - len(row)))

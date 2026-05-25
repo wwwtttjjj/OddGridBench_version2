@@ -1,3 +1,3 @@
 bash train_configs/qwen3_vl_dapo_8B.sh
 bash train_configs/qwen3_vl_grpo_8B.sh
-# bash train_configs/qwen3_vl_gspo_8B.sh
+bash train_configs/qwen3_vl_gspo_8B.sh

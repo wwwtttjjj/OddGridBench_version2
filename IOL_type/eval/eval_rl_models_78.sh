@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-source "/nfsdata4/wengtengjin/oddgrid_task/env/easyr1/bin/activate"
-MODEL_ROOT="/nfsdata4/wengtengjin/oddgrid_task/models"
+source "/jiangwenhao/wengtengjin/oddgrid_task/env/easyr1/bin/activate"
+MODEL_ROOT="/jiangwenhao/wengtengjin/oddgrid_task/models"
 
 DATA_TYPES=("VisA" "BTech" "MVTEC" "GOODADS" "RAD" "MPDD" "icon" "mnist" "hanzi" "MVTEC_loco")
 TRAIN_DATATYPES=("SOI" "IOL" "SYS" "REAL" "TOTAL")

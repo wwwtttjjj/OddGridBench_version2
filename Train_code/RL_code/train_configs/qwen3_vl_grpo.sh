@@ -1,4 +1,7 @@
+#!/bin/bash
+set -euo pipefail
 set -x
+
 wandb login 195651cd9cf6fd812ec326a663dbcf7e518b29c2
 
 
@@ -10,9 +13,9 @@ source "$SCRIPT_DIR/base_configs.sh"
 # MODELTYPES=("2B" "4B" "8B")
 # FUNCTION_TYPES=("EM" "F1")
 
-DATATYPES=("TOTAL")
+DATATYPES=("SOI" "IOL" "SYS")
 MODELTYPES=("4B")
-FUNCTION_TYPES=("F1")
+FUNCTION_TYPES=("EM")
 
 for DATATYPE in "${DATATYPES[@]}"; do
   for MODELTYPE in "${MODELTYPES[@]}"; do
@@ -40,3 +43,5 @@ for DATATYPE in "${DATATYPES[@]}"; do
     done
   done
 done
+cd ../
+bash train_8B.sh
