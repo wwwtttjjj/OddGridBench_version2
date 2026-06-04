@@ -1,9 +1,15 @@
 #!/bin/bash
 set -e
 
-datasets=(VisA BTech MVTEC GOODADS RAD MPDD)
+datasets=(VisA BTech_Dataset_transformed mvtec)
 modes=("zero-shot" "one-example" "two-examples")
-model="Qwen3-VL-4B-Instruct"
+
+model=(
+  # Qwen3-VL-32B-Instruct
+  Qwen3.5-27B
+  # gemma-4-31B-it
+)
+
 sample_num=100
 
 for ds in "${datasets[@]}"; do

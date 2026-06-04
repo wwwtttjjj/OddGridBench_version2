@@ -1,6 +1,9 @@
-#!/usr/bin/env bash
+set -euo pipefail
 
-DATA_TYPES=(BTech)
+source /nfsdata4/wengtengjin/oddgrid_task/env/easyr1/bin/activate
+
+# DATA_TYPES=(VisA BTech MVTEC GOODADS RAD MPDD icon mnist hanzi)
+DATA_TYPES=(RAD)
 MODELS=(
   Qwen3-VL-4B-Instruct
   Qwen3-VL-32B-Instruct

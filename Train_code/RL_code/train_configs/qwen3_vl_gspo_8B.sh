@@ -28,25 +28,21 @@ for DATATYPE in "${DATATYPES[@]}"; do
       echo "Using training file: ${TRAIN_TRAIN_PATH}, model path: ${MODEL_PATH}, datatype: ${DATATYPE}, model type: ${MODELTYPE}, function: ${FUNCTION_TYPE}"
 
       python3 -m verl.trainer.main \
-        config=train_configs/config.yaml \
+        config=train_configs/config_8b.yaml \
         data.train_files="${TRAIN_TRAIN_PATH}" \
         data.val_files="${VAL_PATH}" \
         worker.actor.model.model_path="${MODEL_PATH}" \
         trainer.experiment_name="Qwen3_vl_${MODELTYPE}_${DATATYPE}_${FUNCTION_TYPE}_gspo" \
         worker.reward.reward_function=./train_configs/reward_function/math.py:compute_score_${FUNCTION_TYPE} \
-        worker.actor.global_batch_size=64 \
         worker.actor.micro_batch_size_per_device_for_update=1 \
         data.format_prompt=./train_configs/format_prompt/oddgrid.jinja \
         worker.rollout.tensor_parallel_size=1 \
-        trainer.n_gpus_per_node=4 \
+        trainer.n_gpus_per_node="${GPU_NUM}" \
         worker.actor.loss_type=gspo_token \
         worker.actor.loss_avg_mode=seq \
         worker.actor.clip_ratio_low=3e-4 \
         worker.actor.clip_ratio_high=4e-4 \
-        algorithm.disable_kl=True \
-        data.rollout_batch_size=64 \
-        worker.actor.micro_batch_size_per_device_for_experience=1
-
+        algorithm.disable_kl=True
     done
   done
 done

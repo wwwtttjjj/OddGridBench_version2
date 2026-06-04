@@ -1,0 +1,1 @@
+bash train_configs/train_gemma.sh

@@ -3,7 +3,8 @@ set -euo pipefail
 
 source /nfsdata4/wengtengjin/oddgrid_task/env/gemma_vllm/bin/activate
 
-DATA_TYPES=(VisA BTech MVTEC GOODADS RAD MPDD icon mnist hanzi)
+# DATA_TYPES=(VisA BTech MVTEC GOODADS RAD MPDD icon mnist hanzi)
+DATA_TYPES=(RAD)
 MODELS=(
   gemma-4-31B-it
   gemma-4-26B-A4B-it

@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
-set -euo pipefail
+# set -euo pipefail
 
-DATA_TYPES=(BTech_Dataset_transformed mvtec VisA MPDD RAD GOODADS)
+export CUDA_VISIBLE_DEVICES=4,6
+source /nfsdata4/wengtengjin/oddgrid_task/env/msswift_vllm/bin/activate
+
+# DATA_TYPES=(BTech_Dataset_transformed mvtec VisA MPDD RAD GOODADS)
+DATA_TYPES=(GOODADS)
+
 MODES=(zero-shot one-example two-examples)
 MODELS=(
-  gemma-4-31B-it
-  gemma-4-E4B-it
+  # gemma-4-31B-it
+  Qwen3.5-27B
+  Qwen3-VL-32B-Instruct
 )
 
 for mode in "${MODES[@]}"; do
@@ -26,3 +32,4 @@ for mode in "${MODES[@]}"; do
 done
 
 echo "All Gemma ablation inference tasks completed!"
+# nohup bash eval_gemma.sh > train_gemma.log 2>&1 &

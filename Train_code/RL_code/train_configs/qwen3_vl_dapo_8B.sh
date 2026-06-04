@@ -13,8 +13,8 @@ source "$SCRIPT_DIR/base_configs.sh"
 # MODELTYPES=("2B" "4B" "8B")
 # FUNCTION_TYPES=("EM" "F1")
 
-DATATYPES=("TOTAL")
-MODELTYPES=("8B")
+DATATYPES=("SOI" "IOL" "SYS" "REAL")
+MODELTYPES=("4B")
 FUNCTION_TYPES=("EM")
 
 for DATATYPE in "${DATATYPES[@]}"; do
@@ -29,24 +29,20 @@ for DATATYPE in "${DATATYPES[@]}"; do
       echo "Using training file: ${TRAIN_TRAIN_PATH}, model path: ${MODEL_PATH}, datatype: ${DATATYPE}, model type: ${MODELTYPE}, function: ${FUNCTION_TYPE}"
 
       python3 -m verl.trainer.main \
-        config=train_configs/config.yaml \
+        config=train_configs/config_8b.yaml \
         data.train_files="${TRAIN_TRAIN_PATH}" \
         data.val_files="${VAL_PATH}" \
         worker.actor.model.model_path="${MODEL_PATH}" \
         trainer.experiment_name="Qwen3_vl_${MODELTYPE}_${DATATYPE}_${FUNCTION_TYPE}_dapo" \
         worker.reward.reward_function=./train_configs/reward_function/math.py:compute_score_${FUNCTION_TYPE} \
-        worker.actor.global_batch_size=64 \
         worker.actor.micro_batch_size_per_device_for_update=1 \
         data.format_prompt=./train_configs/format_prompt/oddgrid.jinja \
         worker.rollout.tensor_parallel_size=1 \
         trainer.n_gpus_per_node=4 \
-        data.mini_rollout_batch_size=64 \
         worker.actor.clip_ratio_low=0.2 \
         worker.actor.clip_ratio_high=0.28 \
         algorithm.disable_kl=True \
-        algorithm.online_filtering=True \
-        data.rollout_batch_size=64 \
-        worker.actor.micro_batch_size_per_device_for_experience=1
+        algorithm.online_filtering=True
     done
   done
 done

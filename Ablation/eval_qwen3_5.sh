@@ -3,7 +3,7 @@ set -euo pipefail
 
 DATA_TYPES=(BTech_Dataset_transformed mvtec VisA MPDD RAD GOODADS)
 MODES=(zero-shot one-example two-examples)
-MODELS=(Qwen3.5-9B)
+MODELS=(gemma-4-31B-it)
 
 for mode in "${MODES[@]}"; do
   for data_type in "${DATA_TYPES[@]}"; do

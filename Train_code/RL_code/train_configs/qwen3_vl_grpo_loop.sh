@@ -13,7 +13,7 @@ source "$SCRIPT_DIR/base_configs.sh"
 # MODELTYPES=("2B" "4B" "8B")
 # FUNCTION_TYPES=("EM" "F1")
 
-DATATYPES=("SOI" "IOL" "SYS")
+DATATYPES=("TOTAL")
 MODELTYPES=("4B")
 FUNCTION_TYPES=("EM")
 

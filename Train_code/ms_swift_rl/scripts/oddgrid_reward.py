@@ -73,7 +73,7 @@ def format_reward(pred: str) -> float:
     return 1.0 if extract_boxed_content(pred) is not None else 0.0
 
 
-def combine_with_format(score: float, pred: str, format_weight: float = 0.1) -> float:
+def combine_with_format(score: float, pred: str, format_weight: float = 0.2) -> float:
     return score * (1.0 - format_weight) + format_reward(pred) * format_weight
 
 

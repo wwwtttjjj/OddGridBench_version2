@@ -1,0 +1,70 @@
++ wandb login 195651cd9cf6fd812ec326a663dbcf7e518b29c2
+/nfsdata4/wengtengjin/oddgrid_task/env/easyr1/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'repr' attribute with value False was provided to the `Field()` function, which has no effect in the context it was used. 'repr' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+/nfsdata4/wengtengjin/oddgrid_task/env/easyr1/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'frozen' attribute with value True was provided to the `Field()` function, which has no effect in the context it was used. 'frozen' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+wandb: Appending key for api.wandb.ai to your netrc file: /root/.netrc
+wandb: W&B API key is configured. Use `wandb login --relogin` to force relogin
++ export WANDB_PROJECT=Qwen3.5-RLHF
++ WANDB_PROJECT=Qwen3.5-RLHF
++++ dirname train_configs/train_qwen3_5.sh
+++ cd train_configs
+++ pwd
++ SCRIPT_DIR=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/train_configs
++ source /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/train_configs/base_configs.sh
+++++ dirname /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/train_configs/base_configs.sh
++++ cd /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/train_configs
++++ pwd
+++ SCRIPT_DIR=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/train_configs
++++ dirname /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/train_configs
+++ MS_SWIFT_ROOT=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl
++++ dirname /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl
+++ TRAIN_CODE_DIR=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code
++++ dirname /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code
+++ PROJECT_ROOT=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean
++++ dirname /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean
+++ WORKSPACE_ROOT=/nfsdata4/wengtengjin/oddgrid_task
+++ export WANDB_PROJECT=Qwen3.5-RLHF
+++ WANDB_PROJECT=Qwen3.5-RLHF
+++ DATA_DIR=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/data
+++ MODELS_DIR=/nfsdata4/wengtengjin/oddgrid_task/models
++++ python -
+++ GPU_NUM=4
+++ VAL_PATH=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/data/test_data.jsonl
+++ VAL_SHORT_PATH=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/data/test_data_short.jsonl
+++ SOI_TRAIN_PATH=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/data/train_soi_data.jsonl
+++ IOL_TRAIN_PATH=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/data/train_iol_data.jsonl
+++ SYS_TRAIN_PATH=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/data/train_icon_data.jsonl
+++ REAL_TRAIN_PATH=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/data/train_real_data.jsonl
+++ TOTAL_TRAIN_PATH=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/data/train_total_data.jsonl
+++ QWEN3_VL_2B=/nfsdata4/wengtengjin/oddgrid_task/models/Qwen3-VL-2B-Instruct
+++ QWEN3_VL_4B=/nfsdata4/wengtengjin/oddgrid_task/models/Qwen3-VL-4B-Instruct
+++ QWEN3_VL_8B=/nfsdata4/wengtengjin/oddgrid_task/models/Qwen3-VL-8B-Instruct
+++ QWEN35_2B=/nfsdata4/wengtengjin/oddgrid_task/models/Qwen3.5-2B
+++ QWEN35_4B=/nfsdata4/wengtengjin/oddgrid_task/models/Qwen3.5-4B
+++ QWEN35_9B=/nfsdata4/wengtengjin/oddgrid_task/models/Qwen3.5-9B
+++ GEMMA_E2B=/nfsdata4/wengtengjin/oddgrid_task/models/gemma-4-E2B-it
+++ GEMMA_E4B=/nfsdata4/wengtengjin/oddgrid_task/models/gemma-4-E4B-it
+++ GEMMA_26B_A4B=/nfsdata4/wengtengjin/oddgrid_task/models/gemma-4-26B-A4B-it
++ source /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/train_configs/common_args.sh
+++ COMMON_GRPO_ARGS=(--rlhf_type grpo --enable_thinking false --tuner_type full --torch_dtype bfloat16 --max_length 8192 --max_completion_length 2048 --max_pixels 4164304 --use_vllm true --vllm_mode colocate --vllm_gpu_memory_utilization 0.5 --vllm_tensor_parallel_size 1 --vllm_max_model_len 11264 --sleep_level 0 --max_steps 100 --per_device_train_batch_size 1 --gradient_accumulation_steps 64 --dataloader_num_workers 16 --eval_steps 50 --num_generations 4 --num_generations_eval 1 --temperature 1.0 --deepspeed zero3 --learning_rate 1e-6 --lr_scheduler_type constant --warmup_ratio 0.0 --weight_decay 0.01 --max_grad_norm 1.0 --loss_type dapo --epsilon 0.2 --epsilon_high 0.28 --scale_rewards group --beta 0.01 --dynamic_sample true --max_resample_times 3 --overlong_filter true --freeze_vit false --freeze_aligner false --gradient_checkpointing false --vit_gradient_checkpointing true --logging_steps 1 --log_completions true --report_to wandb --save_steps 100 --save_total_limit 2 --num_ppo_epochs 1 --adam_beta2 0.999 --attn_impl flash_attn)
++ export MASTER_PORT=29512
++ MASTER_PORT=29512
++ DATATYPES=("TOTAL")
++ FUNCTION_TYPES=("EM")
++ for DATATYPE in "${DATATYPES[@]}"
++ for FUNCTION_TYPE in "${FUNCTION_TYPES[@]}"
++ TRAIN_PATH_VAR=TOTAL_TRAIN_PATH
++ TRAIN_PATH=/nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/data/train_total_data.jsonl
+++ printf %s EM
+++ tr '[:upper:]' '[:lower:]'
++ FUNCTION_TYPE_LOWER=em
+++ printf %s TOTAL
+++ tr '[:upper:]' '[:lower:]'
++ DATATYPE_LOWER=total
++ RUN_NAME=Qwen35_4B_total_em
++ echo 'Using training file: /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/data/train_total_data.jsonl, datatype: TOTAL, function: EM'
+Using training file: /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/data/train_total_data.jsonl, datatype: TOTAL, function: EM
++ NPROC_PER_NODE=4
++ swift rlhf --rlhf_type grpo --enable_thinking false --tuner_type full --torch_dtype bfloat16 --max_length 8192 --max_completion_length 2048 --max_pixels 4164304 --use_vllm true --vllm_mode colocate --vllm_gpu_memory_utilization 0.5 --vllm_tensor_parallel_size 1 --vllm_max_model_len 11264 --sleep_level 0 --max_steps 100 --per_device_train_batch_size 1 --gradient_accumulation_steps 64 --dataloader_num_workers 16 --eval_steps 50 --num_generations 4 --num_generations_eval 1 --temperature 1.0 --deepspeed zero3 --learning_rate 1e-6 --lr_scheduler_type constant --warmup_ratio 0.0 --weight_decay 0.01 --max_grad_norm 1.0 --loss_type dapo --epsilon 0.2 --epsilon_high 0.28 --scale_rewards group --beta 0.01 --dynamic_sample true --max_resample_times 3 --overlong_filter true --freeze_vit false --freeze_aligner false --gradient_checkpointing false --vit_gradient_checkpointing true --logging_steps 1 --log_completions true --report_to wandb --save_steps 100 --save_total_limit 2 --num_ppo_epochs 1 --adam_beta2 0.999 --attn_impl flash_attn --model /nfsdata4/wengtengjin/oddgrid_task/models/Qwen3.5-4B --external_plugins /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/scripts/oddgrid_reward.py --reward_funcs oddgrid_em --columns '{"solution": "solution"}' --dataset /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/data/train_total_data.jsonl --val_dataset /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/data/test_data_short.jsonl --output_dir /nfsdata4/wengtengjin/oddgrid_task/OddGridBench_clean/Train_code/ms_swift_rl/output/Qwen35_4B_total_em --run_name Qwen35_4B_total_em
+train_configs/train_qwen3_5.sh: line 35: swift: command not found

@@ -94,12 +94,15 @@ def run_vllm_http(args):
     valid_data = [d for d in json_data if d.get("id") not in processed_ids]
     print(f"[INFO] Remaining: {len(valid_data)}")
 
-    # ===== 随机采样 =====
+    # ===== 随机采样：只补足到 sample_num，总量不重复超过目标数 =====
+    remaining_quota = max(args.sample_num - len(processed_ids), 0)
     random.seed(42)
-    if len(valid_data) > args.sample_num:
-        valid_data = random.sample(valid_data, args.sample_num)
+    if len(valid_data) > remaining_quota:
+        valid_data = random.sample(valid_data, remaining_quota)
 
-    print(f"[INFO] Sampled: {len(valid_data)}")
+    print(f"[INFO] Target samples: {args.sample_num}")
+    print(f"[INFO] Need to run: {remaining_quota}")
+    print(f"[INFO] Sampled this run: {len(valid_data)}")
 
     # ===== 推理 =====
     time_list = []

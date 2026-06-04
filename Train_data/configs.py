@@ -6,7 +6,9 @@ MAX_GRID = 5
 
 
 odd_nums = [0, 1, 2, 3, 4]
-odd_pro = [0.05, 0.55, 0.2, 0.15,0.05]
+# odd_pro = [0.05, 0.55, 0.2, 0.15,0.05]
+odd_pro = [0.05, 0.70, 0.15, 0.05,0.05]
+
 
 MIN_IMG_MAX_SIDE = 350
 MAX_IMG_MAX_SIDE = 600

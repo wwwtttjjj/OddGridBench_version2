@@ -85,10 +85,10 @@ def get_vllm_model(model_path):
     global _VLLM_MODEL
     tp = torch.cuda.device_count()
     if _VLLM_MODEL is None:
-        if needs_transformers_fallback(model_path):
-            print(f"[INFO] {os.path.basename(model_path)} is not supported by vLLM 0.8.x; using Transformers fallback.")
-            _VLLM_MODEL = TransformersChatModel(model_path)
-            return _VLLM_MODEL
+        # if needs_transformers_fallback(model_path):
+        #     print(f"[INFO] {os.path.basename(model_path)} is not supported by vLLM 0.8.x; using Transformers fallback.")
+        #     _VLLM_MODEL = TransformersChatModel(model_path)
+        #     return _VLLM_MODEL
 
         llm_kwargs = {
             "model": model_path,

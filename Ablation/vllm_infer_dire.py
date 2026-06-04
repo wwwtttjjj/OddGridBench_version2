@@ -82,10 +82,10 @@ def get_vllm_model(model_name):
     if _VLLM_MODEL is None:
         tp = torch.cuda.device_count()
         model_path = os.path.join(MODEL_PATH, model_name)
-        if needs_transformers_fallback(model_name):
-            print(f"[INFO] {model_name} is not supported by vLLM 0.8.x; using Transformers fallback.")
-            _VLLM_MODEL = TransformersChatModel(model_path)
-            return _VLLM_MODEL
+        # if needs_transformers_fallback(model_name):
+        #     print(f"[INFO] {model_name} is not supported by vLLM 0.8.x; using Transformers fallback.")
+        #     _VLLM_MODEL = TransformersChatModel(model_path)
+        #     return _VLLM_MODEL
 
         llm_kwargs = {
             "model": model_path,
@@ -101,8 +101,6 @@ def get_vllm_model(model_name):
     return _VLLM_MODEL
 
 def run_inference(data_type, dataset_name, model_name, mode):
-    llm = get_vllm_model(model_name)
-    
     json_input_path = os.path.join(BASE_DATA_DIR, f"{dataset_name}_{data_type}.json")
     # 结果文件名区分模式
     save_path = f"{SAVE_DIR}_{mode}/{data_type}_{dataset_name}_{model_name}.json"
@@ -129,7 +127,8 @@ def run_inference(data_type, dataset_name, model_name, mode):
 
     print(f"\n[INFO] 模式: {mode} | 任务: {dataset_name} ({data_type})")
     
-    for meta_key, info in tqdm(image_metadata.items()):
+    pending_items = []
+    for meta_key, info in image_metadata.items():
         img_path = info.get("physical_path")
         if not img_path or not os.path.exists(img_path) or img_path in processed_paths:
             continue
@@ -137,6 +136,18 @@ def run_inference(data_type, dataset_name, model_name, mode):
         label = info.get("label", "").lower()
         if label not in ["anomaly", "normal"]:
             continue
+
+        pending_items.append((meta_key, info))
+
+    if not pending_items:
+        print("[INFO] 没有剩余待处理记录，跳过模型加载")
+        return
+
+    print(f"[INFO] 剩余待处理 {len(pending_items)} 条记录，开始加载模型")
+    llm = get_vllm_model(model_name)
+    
+    for meta_key, info in tqdm(pending_items):
+        img_path = info.get("physical_path")
 
         try:
             image_base64 = encode_image(img_path)

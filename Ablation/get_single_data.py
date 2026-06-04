@@ -117,7 +117,9 @@ def main(DATA_NAME, SOURCE_ROOT="../Test_data", TARGET_ROOT="single_data"):
             print(f"   >> 已生成 JSON: {out_json_name} (拷贝 {c} 张)")
 
 if __name__ == "__main__":
-    datasets = ["VisA", "BTech_Dataset_transformed", "mvtec", "ELPV","MPDD","RAD", "GOODADS"]
+    # datasets = ["VisA", "BTech_Dataset_transformed", "mvtec", "ELPV","MPDD","RAD", "GOODADS"]
+    datasets = ["RAD"]
+    
     TARGET_PATH = Path("single_data")
     
     # 初始化清空目录

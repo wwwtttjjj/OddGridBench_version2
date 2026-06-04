@@ -43,5 +43,3 @@ for DATATYPE in "${DATATYPES[@]}"; do
     done
   done
 done
-cd ../
-bash train_8B.sh

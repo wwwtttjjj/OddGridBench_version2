@@ -13,8 +13,8 @@ source "$SCRIPT_DIR/base_configs.sh"
 # FUNCTION_TYPES=("EM" "F1")
 
 DATATYPES=("TOTAL")
-MODELTYPES=("2B" "8B")
-FUNCTION_TYPES=("F1" "EM")
+MODELTYPES=("4B")
+FUNCTION_TYPES=("EM")
 
 for DATATYPE in "${DATATYPES[@]}"; do
   for MODELTYPE in "${MODELTYPES[@]}"; do

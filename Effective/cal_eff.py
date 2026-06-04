@@ -32,7 +32,8 @@ def process_file(file_path, data_type):
         data = json.load(f)
 
     total_time = 0
-    total_tokens = 0
+    total_output_tokens = 0
+    has_output_tokens = False
     total_images = 0
 
     for item in data:
@@ -41,11 +42,12 @@ def process_file(file_path, data_type):
             continue
 
         num_images = get_num_images(item, data_type)
-        tokens = item.get("total_tokens")
+        output_tokens = item.get("completion_tokens")
 
         total_time += t
-        if tokens is not None:
-            total_tokens += tokens
+        if output_tokens is not None:
+            total_output_tokens += output_tokens
+            has_output_tokens = True
         total_images += num_images
 
     if total_images == 0:
@@ -57,8 +59,8 @@ def process_file(file_path, data_type):
         "total_images": total_images,
         "total_time": round(total_time, 4),
         "avg_per_image_time": round(total_time / total_images, 2),
-        "total_tokens": total_tokens,
-        "avg_per_image_tokens": round(total_tokens / total_images, 2)
+        "total_output_tokens": total_output_tokens if has_output_tokens else "",
+        "avg_per_image_output_tokens": round(total_output_tokens / total_images, 2) if has_output_tokens else ""
     }
 
 
@@ -92,8 +94,8 @@ def main():
                 "total_images",
                 "total_time",
                 "avg_per_image_time",
-                "total_tokens",
-                "avg_per_image_tokens"
+                "total_output_tokens",
+                "avg_per_image_output_tokens"
             ])
             writer.writeheader()
             writer.writerows(rows)

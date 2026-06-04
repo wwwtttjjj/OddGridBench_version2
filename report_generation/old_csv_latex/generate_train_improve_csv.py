@@ -6,33 +6,26 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = ROOT.parent
 
 # Rows follow the LaTeX table layout:
 # col A: method group, col B: reward/function group, col C: model name.
 ROW_SPECS = [
-    ("Baseline", "", "Qwen3-VL-2B", "Qwen3-VL-2B-Instruct"),
     ("Baseline", "", "Qwen3-VL-4B", "Qwen3-VL-4B-Instruct"),
     ("Baseline", "", "Qwen3-VL-8B", "Qwen3-VL-8B-Instruct"),
-    ("GRPO", "EM_Function", "VCP-2B", ("GRPO", "EM_Function", "2B")),
     ("GRPO", "EM_Function", "VCP-4B", ("GRPO", "EM_Function", "4B")),
     ("GRPO", "EM_Function", "VCP-8B", ("GRPO", "EM_Function", "8B")),
-    ("GRPO", "F1_Function", "VCP-2B", ("GRPO", "F1_Function", "2B")),
     ("GRPO", "F1_Function", "VCP-4B", ("GRPO", "F1_Function", "4B")),
     ("GRPO", "F1_Function", "VCP-8B", ("GRPO", "F1_Function", "8B")),
-    ("GSPO", "EM_Function", "VCP-2B", ("GSPO", "EM_Function", "2B")),
     ("GSPO", "EM_Function", "VCP-4B", ("GSPO", "EM_Function", "4B")),
     ("GSPO", "EM_Function", "VCP-8B", ("GSPO", "EM_Function", "8B")),
-    ("GSPO", "F1_Function", "VCP-2B", ("GSPO", "F1_Function", "2B")),
     ("GSPO", "F1_Function", "VCP-4B", ("GSPO", "F1_Function", "4B")),
     ("GSPO", "F1_Function", "VCP-8B", ("GSPO", "F1_Function", "8B")),
-    ("DAPO", "EM_Function", "VCP-2B", ("DAPO", "EM_Function", "2B")),
     ("DAPO", "EM_Function", "VCP-4B", ("DAPO", "EM_Function", "4B")),
     ("DAPO", "EM_Function", "VCP-8B", ("DAPO", "EM_Function", "8B")),
-    ("DAPO", "F1_Function", "VCP-2B", ("DAPO", "F1_Function", "2B")),
     ("DAPO", "F1_Function", "VCP-4B", ("DAPO", "F1_Function", "4B")),
     ("DAPO", "F1_Function", "VCP-8B", ("DAPO", "F1_Function", "8B")),
 ]
-
 # Add aliases here when a trained checkpoint has a non-standard result filename.
 # Keys are (method, function, size), values are JSON filename stems.
 # TRAINED_ALIASES = {
@@ -59,7 +52,12 @@ def normalize_iol_gt(answer):
 
 
 def normalize_iol_pred(extract_answer):
-    if extract_answer == "" or extract_answer is None or not isinstance(extract_answer, list):
+    # Empty string means extraction failed/no parsed answer; only [] is an explicit empty prediction.
+    if extract_answer is None or extract_answer == "":
+        return None
+    if extract_answer == []:
+        return []
+    if not isinstance(extract_answer, list):
         return None
     out = []
     for item in extract_answer:
@@ -77,7 +75,8 @@ def normalize_soi_gt(answer):
 
 
 def normalize_soi_pred(extract_answer):
-    if extract_answer is None:
+    # Empty string means extraction failed/no parsed answer; only [] is an explicit empty prediction.
+    if extract_answer is None or extract_answer == "":
         return None
     if extract_answer == []:
         return []
@@ -233,7 +232,7 @@ def metric_cells_csv(metric):
 
 def build_csv_rows(results):
     header1 = ["Models", "", ""]
-    header1 += ["Synthetic Homogeneous Scenario"] + [""] * (2 * (len(SYNTHETIC) + 1) - 1)
+    header1 += ["Synthetic Scenario"] + [""] * (2 * (len(SYNTHETIC) + 1) - 1)
     header1 += ["Fixed-View Industrial Scenario"] + [""] * (2 * (len(FIXED) + 1) - 1)
     header1 += ["View-Variant Industrial Scenario"] + [""] * (2 * (len(VIEW_VARIANT) + 1) - 1)
     header2 = ["", "", ""]
@@ -262,8 +261,8 @@ def write_csv(path, rows):
 
 def main():
     parser = argparse.ArgumentParser(description="Generate train improvement CSV tables for IOL and SOI.")
-    parser.add_argument("--iol-dir", default=str(ROOT / "IOL_type" / "eval"))
-    parser.add_argument("--soi-dir", default=str(ROOT / "SOI_type" / "eval"))
+    parser.add_argument("--iol-dir", default=str(PROJECT_ROOT / "IOL_type" / "eval"))
+    parser.add_argument("--soi-dir", default=str(PROJECT_ROOT / "SOI_type" / "eval"))
     parser.add_argument("--out-dir", default=str(ROOT / "merged_reports"))
     args = parser.parse_args()
     out_dir = Path(args.out_dir)

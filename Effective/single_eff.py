@@ -185,11 +185,15 @@ def run_inference(data_type, dataset_name, model_name, sample_num, mode):
             continue
         valid_items.append((k, v))
 
+    remaining_quota = max(sample_num - len(processed_paths), 0)
     random.seed(42)
-    if len(valid_items) > sample_num:
-        valid_items = random.sample(valid_items, sample_num)
+    if len(valid_items) > remaining_quota:
+        valid_items = random.sample(valid_items, remaining_quota)
 
-    print(f"\n[START] Mode: {mode} | {dataset_name} | {model_name} | Samples: {len(valid_items)}")
+    print(
+        f"\n[START] Mode: {mode} | {dataset_name} | {model_name} | "
+        f"Target: {sample_num} | Done: {len(processed_paths)} | Samples this run: {len(valid_items)}"
+    )
 
     time_list = []
     token_list = []

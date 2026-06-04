@@ -1,6 +1,10 @@
-#!/usr/bin/env bash
+set -euo pipefail
 
-DATA_TYPES=(VisA BTech MVTEC GOODADS RAD MPDD)
+source /nfsdata4/wengtengjin/oddgrid_task/env/Internvl/bin/activate
+
+
+# DATA_TYPES=(VisA BTech MVTEC GOODADS RAD MPDD icon mnist hanzi)
+DATA_TYPES=(RAD)
 MODELS=(
   InternVL3_5-38B
   InternVL3_5-8B

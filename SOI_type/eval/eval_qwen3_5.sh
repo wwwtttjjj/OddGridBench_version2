@@ -5,7 +5,8 @@ cd "$(dirname "$0")"
 
 source /nfsdata4/wengtengjin/oddgrid_task/env/qwen35_vllm/bin/activate
 
-DATA_TYPES=(VisA BTech MVTEC GOODADS RAD MPDD icon mnist hanzi)
+# DATA_TYPES=(VisA BTech MVTEC GOODADS RAD MPDD icon mnist hanzi)
+DATA_TYPES=(RAD)
 MODELS=(
   Qwen3.5-2B
   Qwen3.5-4B

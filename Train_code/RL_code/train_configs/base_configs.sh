@@ -27,3 +27,4 @@ TOTAL_TRAIN_PATH="$TARGET_DIR/Train_code/train_total_data.jsonl"
 MODEL_PATH_2B=../../../models/Qwen3-VL-2B-Instruct
 MODEL_PATH_4B=../../../models/Qwen3-VL-4B-Instruct
 MODEL_PATH_8B=../../../models/Qwen3-VL-8B-Instruct
+MODEL_PATH_32B=../../../models/Qwen3-VL-32B-Instruct
