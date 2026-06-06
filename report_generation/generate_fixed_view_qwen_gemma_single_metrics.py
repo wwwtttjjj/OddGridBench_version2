@@ -345,6 +345,13 @@ def write_latex(path, rows):
     lines = [
         r"\begin{table*}[t]",
         r"\centering",
+        (
+            r"\caption{Fixed-view Qwen model comparison with accuracy metrics and per-image efficiency. "
+            r"FPS denotes processed images per second, and AvgTok denotes average completion tokens per image. "
+            r"Metric arrows indicate optimization direction. Red marks the best value and blue marks the worst value "
+            r"within each model block and metric column.}"
+        ),
+        r"\label{tab:fixed_view_qwen_single_metrics}",
         r"\scriptsize",
         r"\definecolor{MaxValueText}{HTML}{B00020}",
         r"\definecolor{MinValueText}{HTML}{1F5FA8}",
@@ -376,13 +383,6 @@ def write_latex(path, rows):
         r"\bottomrule",
         r"\end{tabular}%",
         r"}",
-        (
-            r"\caption{Fixed-view Qwen model comparison with accuracy metrics and per-image efficiency. "
-            r"FPS denotes processed images per second, and AvgTok denotes average completion tokens per image. "
-            r"Metric arrows indicate optimization direction. Red marks the best value and blue marks the worst value "
-            r"within each model block and metric column.}"
-        ),
-        r"\label{tab:fixed_view_qwen_single_metrics}",
         r"\end{table*}",
         "",
     ])

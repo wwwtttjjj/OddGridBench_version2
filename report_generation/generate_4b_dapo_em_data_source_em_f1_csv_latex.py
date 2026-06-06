@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 import argparse
 import csv
@@ -9,28 +8,36 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = ROOT.parent
 
-MODEL_ROWS = [
-    ("InternVL3.5-2B", "InternVL3_5-2B"),
-    ("InternVL3.5-4B", "InternVL3_5-4B"),
-    ("InternVL3.5-8B", "InternVL3_5-8B"),
-    ("InternVL3.5-38B", "InternVL3_5-38B"),
-    ("Qwen3-VL-2B", "Qwen3-VL-2B-Instruct"),
-    ("Qwen3-VL-4B", "Qwen3-VL-4B-Instruct"),
-    ("Qwen3-VL-8B", "Qwen3-VL-8B-Instruct"),
-    ("Qwen3-VL-32B", "Qwen3-VL-32B-Instruct"),
-    ("Gemma4-E2B-it", "gemma-4-E2B-it"),
-    ("Gemma4-E4B-it", "gemma-4-E4B-it"),
-    ("Gemma4-26B-A4B-it", "gemma-4-26B-A4B-it"),
-    ("Gemma4-31B-it", "gemma-4-31B-it"),
-    ("Qwen3.5-2B", "Qwen3.5-2B"),
-    ("Qwen3.5-4B", "Qwen3.5-4B"),
-    ("Qwen3.5-9B", "Qwen3.5-9B"),
-    ("Qwen3.5-27B", "Qwen3.5-27B"),
+ROW_SPECS = [
+    ("Qwen3-VL-4B", "-", "-", "Qwen3-VL-4B-Instruct"),
+    ("VCP-4B", "$\\checkmark$", "$\\times$", "Qwen3_vl_4B_SYS_EM_dapo_step_200"),
+    ("VCP-4B", "$\\times$", "$\\checkmark$", "Qwen3_vl_4B_REAL_EM_dapo_step_200"),
+    ("VCP-4B", "$\\checkmark$", "$\\checkmark$", "Qwen3_vl_4B_TOTAL_EM_dapo_step_200"),
 ]
 SYNTHETIC = [("ICON", ["icon_output"]), ("MNIST", ["mnist_output"]), ("Hanzi", ["hanzi_output"])]
 FIXED = [("MVTEC", ["MVTEC_output"]), ("VISA", ["VisA_output"]), ("Btec", ["BTech_output"])]
 VIEW_VARIANT = [("MPDD/RAD", ["MPDD_output", "RAD_output"]), ("GOODADS", ["GOODADS_output"])]
-DATASET_COLUMNS = SYNTHETIC + [("Total", [name for _, names in SYNTHETIC for name in names])] + FIXED + [("Total", [name for _, names in FIXED for name in names])] + VIEW_VARIANT + [("Total", [name for _, names in VIEW_VARIANT for name in names])]
+SUMMARY_DATASET_COLUMNS = (
+    [("Synthetic Scenario", "Total", [name for _, names in SYNTHETIC for name in names])]
+    + [("Fixed-View Scenario", "Total", [name for _, names in FIXED for name in names])]
+    + [("View-Variant Scenario", "Total", [name for _, names in VIEW_VARIANT for name in names])]
+)
+DETAILED_DATASET_COLUMNS = (
+    [("Synthetic Scenario", label, names) for label, names in SYNTHETIC]
+    + [("Fixed-View Scenario", label, names) for label, names in FIXED]
+    + [("View-Variant Scenario", label, names) for label, names in VIEW_VARIANT]
+)
+
+DATASET_DISPLAY_NAMES = {
+    "ICON": "IconSim",
+    "MNIST": "DigitSim",
+    "Hanzi": "HanziSim",
+    "MVTEC": "MVTec AD",
+    "VISA": "VisA",
+    "Btec": "BTAD",
+    "MPDD/RAD": "MPDD/RAD",
+    "GOODADS": "GoodsAD",
+}
 
 IOL_COORD_RE = re.compile(r"^\((\d+),(\d+)\)$")
 SOI_IMAGE_RE = re.compile(r"^image(\d+)$")
@@ -159,6 +166,8 @@ def average_metrics(items):
 
 def metric_for_model(results, model_key, dataset_names):
     vals = [results.get(ds, {}).get(model_key) for ds in dataset_names]
+    if any(value is None for value in vals):
+        return None
     return average_metrics(vals)
 
 
@@ -168,70 +177,39 @@ def metric_cells(metric):
     return [f"{metric['EM']:.1f}", f"{metric['F1']:.1f}"]
 
 
-def build_csv_rows(results):
-    header1 = ["Models"]
-    header1 += ["Synthetic Scenario"] + [""] * (2 * (len(SYNTHETIC) + 1) - 1)
-    header1 += ["Fixed-View Industrial Scenario"] + [""] * (2 * (len(FIXED) + 1) - 1)
-    header1 += ["View-Variant Industrial Scenario"] + [""] * (2 * (len(VIEW_VARIANT) + 1) - 1)
-    header2 = [""]
-    for label, _ in DATASET_COLUMNS:
-        header2.extend([label, ""])
-    header3 = [""]
-    for _ in DATASET_COLUMNS:
-        header3.extend(["EM", "F1"])
+def build_csv_rows(results, dataset_columns, include_dataset_row=True):
+    header1 = ["Models", "SYS", "REAL"]
+    for scenario, _, _ in dataset_columns:
+        header1.extend([scenario, ""])
 
-    rows = [header1, header2, header3]
-    for display_name, model_key in MODEL_ROWS:
-        row = [display_name]
-        for _, dataset_names in DATASET_COLUMNS:
+    header_rows = [header1]
+    if include_dataset_row:
+        header2 = ["", "", ""]
+        for _, label, _ in dataset_columns:
+            header2.extend([label, ""])
+        header_rows.append(header2)
+
+    metric_header = ["", "", ""]
+    for _ in dataset_columns:
+        metric_header.extend(["EM", "F1"])
+    header_rows.append(metric_header)
+
+    rows = header_rows
+    for model_display, strategy, reward, model_key in ROW_SPECS:
+        row = [model_display, strategy, reward]
+        for _, _, dataset_names in dataset_columns:
             row.extend(metric_cells(metric_for_model(results, model_key, dataset_names)))
         rows.append(row)
     return rows
-
 
 def write_csv(path, rows):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8-sig") as f:
-        writer = csv.writer(f)
-        writer.writerows(rows)
-
-
-DATASET_DISPLAY_NAMES = {
-    "ICON": "IconSim",
-    "icon": "IconSim",
-    "MNIST": "DigitSim",
-    "mnist": "DigitSim",
-    "Hanzi": "HanziSim",
-    "hanzi": "HanziSim",
-    "MVTEC": "MVTec AD",
-    "MVTec": "MVTec AD",
-    "mvtec": "MVTec AD",
-    "MVTEC_AD2": "MVTec AD 2",
-    "MVTEC AD 2": "MVTec AD 2",
-    "mvtec_ad2": "MVTec AD 2",
-    "VISA": "VisA",
-    "visa": "VisA",
-    "Btec": "BTAD",
-    "BTech": "BTAD",
-    "BTech_Dataset_transformed": "BTAD",
-    "GOODADS": "GoodsAD",
-    "GoodAD": "GoodsAD",
-    "goodsad": "GoodsAD",
-}
-
-
-
-MODEL_GROUP_ORDER = {
-    "InternVL": 0,
-    "Qwen3-VL": 1,
-    "Gemma": 2,
-    "Qwen3.5": 3,
-}
+        csv.writer(f).writerows(rows)
 
 
 def latex_escape(text):
-    text = str(text)
     replacements = {
         "\\": r"\textbackslash{}",
         "&": r"\&",
@@ -244,15 +222,14 @@ def latex_escape(text):
         "~": r"\textasciitilde{}",
         "^": r"\textasciicircum{}",
     }
-    return "".join(replacements.get(ch, ch) for ch in text)
+    return "".join(replacements.get(ch, ch) for ch in str(text))
 
 
-def read_csv(path):
-    with Path(path).open("r", encoding="utf-8-sig", newline="") as f:
-        return list(csv.reader(f))
+def display_dataset_name(dataset_name):
+    return DATASET_DISPLAY_NAMES.get(dataset_name.strip(), dataset_name)
 
 
-def nonempty_spans(row, start_col=1, end_col=None):
+def nonempty_spans(row, start_col=3, end_col=None):
     if end_col is None:
         end_col = len(row)
     starts = [(idx, cell.strip()) for idx, cell in enumerate(row[start_col:end_col], start_col) if cell.strip()]
@@ -262,11 +239,9 @@ def nonempty_spans(row, start_col=1, end_col=None):
         spans.append((idx, next_idx - idx, label))
     return spans
 
-
 def cmidrules(spans):
     parts = []
     for start_idx, span, _ in spans:
-        # LaTeX columns are 1-based. CSV col 0 is Models, so col idx maps to idx + 1.
         first = start_idx + 1
         last = start_idx + span
         parts.append(rf"\cmidrule(lr){{{first}-{last}}}")
@@ -280,7 +255,7 @@ def parse_float(value):
         return None
 
 
-def best_columns(data_rows, metric_start_col=1):
+def best_columns(data_rows, metric_start_col=3):
     best = {}
     if not data_rows:
         return best
@@ -303,64 +278,38 @@ def format_metric(value, best_value=None, bold_best=True):
         formatted = rf"\textbf{{{formatted}}}"
     return formatted
 
+def make_latex_core(rows, bold_best=True, width=r"\columnwidth"):
+    if len(rows) < 3:
+        raise ValueError("CSV must contain header rows and at least one data row")
 
-def display_model_name(model_name):
-    if model_name.startswith("Gemma"):
-        return model_name.replace("-it", "")
-    return model_name
+    header1 = rows[0]
+    has_dataset_row = len(rows) >= 4 and any(cell.strip() and cell.strip() not in {"EM", "F1"} for cell in rows[1][3:])
+    header2 = rows[1] if has_dataset_row else None
+    metric_header = rows[2] if has_dataset_row else rows[1]
+    data_rows = rows[3:] if has_dataset_row else rows[2:]
 
-
-def display_dataset_name(dataset_name):
-    return DATASET_DISPLAY_NAMES.get(dataset_name.strip(), dataset_name)
-
-
-def model_group(model_name):
-    if model_name.startswith("InternVL"):
-        return "InternVL"
-    if model_name.startswith("Qwen3-VL"):
-        return "Qwen3-VL"
-    if model_name.startswith("Qwen3.5"):
-        return "Qwen3.5"
-    if model_name.startswith("Gemma"):
-        return "Gemma"
-    return model_name.split("-")[0]
-
-
-def reorder_model_rows(data_rows):
-    return sorted(
-        enumerate(data_rows),
-        key=lambda item: (MODEL_GROUP_ORDER.get(model_group(item[1][0].strip()), 99), item[0]),
-    )
-
-
-def make_latex_table(rows, task_name, bold_best=True):
-    if len(rows) < 4:
-        raise ValueError("CSV must contain three header rows and at least one data row")
-
-    header1, header2, header3 = rows[:3]
-    data_rows = [row for _, row in reorder_model_rows(rows[3:])]
     col_count = max(len(r) for r in rows)
     for row in rows:
         row.extend([""] * (col_count - len(row)))
 
-    group_spans = nonempty_spans(header1, 1, col_count)
-    dataset_spans = nonempty_spans(header2, 1, col_count)
-    best = best_columns(data_rows) if bold_best else {}
+    group_spans = nonempty_spans(header1, 3, col_count)
+    dataset_spans = nonempty_spans(header2, 3, col_count) if has_dataset_row else []
+    best = best_columns(data_rows, metric_start_col=3) if bold_best else {}
+    row_span = 3 if has_dataset_row else 2
 
     align = "c" * col_count
-    lines = []
-    lines.append(r"\begin{table*}[t]")
-    lines.append(r"\centering")
-    lines.append(r"\scriptsize")
-    lines.append(r"\setlength{\tabcolsep}{2pt}")
-    lines.append(rf"\caption{{{latex_escape(task_name)} EM and F1 results across datasets.}}")
-    lines.append(rf"\label{{tab:{task_name.lower()}_em_f1}}")
-    lines.append(r"\resizebox{\textwidth}{!}{%")
-    lines.append(rf"\begin{{tabular}}{{{align}}}")
-    lines.append(r"\toprule")
+    lines = [
+        rf"\resizebox{{{width}}}{{!}}{{%",
+        rf"\begin{{tabular}}{{{align}}}",
+        r"\toprule",
+    ]
 
-    group_cells = [rf"\multirow{{3}}{{*}}{{{latex_escape(header1[0].strip() or 'Models')}}}"]
-    cursor = 1
+    group_cells = [
+        rf"\multirow{{{row_span}}}{{*}}{{{latex_escape(header1[0])}}}",
+        rf"\multirow{{{row_span}}}{{*}}{{{latex_escape(header1[1])}}}",
+        rf"\multirow{{{row_span}}}{{*}}{{{latex_escape(header1[2])}}}",
+    ]
+    cursor = 3
     for start, span, label in group_spans:
         while cursor < start:
             group_cells.append("")
@@ -371,78 +320,117 @@ def make_latex_table(rows, task_name, bold_best=True):
     if group_spans:
         lines.append(cmidrules(group_spans))
 
-    dataset_cells = [""]
-    cursor = 1
-    for start, span, label in dataset_spans:
-        while cursor < start:
-            dataset_cells.append("")
-            cursor += 1
-        dataset_cells.append(rf"\multicolumn{{{span}}}{{c}}{{{latex_escape(display_dataset_name(label))}}}")
-        cursor = start + span
-    lines.append(" & ".join(dataset_cells) + r" \\")
-    if dataset_spans:
-        lines.append(cmidrules(dataset_spans))
+    if has_dataset_row:
+        dataset_cells = ["", "", ""]
+        cursor = 3
+        for start, span, label in dataset_spans:
+            while cursor < start:
+                dataset_cells.append("")
+                cursor += 1
+            dataset_cells.append(rf"\multicolumn{{{span}}}{{c}}{{{latex_escape(display_dataset_name(label))}}}")
+            cursor = start + span
+        lines.append(" & ".join(dataset_cells) + r" \\")
+        if dataset_spans:
+            lines.append(cmidrules(dataset_spans))
 
-    metric_cells = [""] + [latex_escape(cell.strip()) for cell in header3[1:col_count]]
-    lines.append(" & ".join(metric_cells) + r" \\")
+    metric_row = ["", "", ""] + [latex_escape(cell.strip()) for cell in metric_header[3:col_count]]
+    lines.append(" & ".join(metric_row) + r" \\")
     lines.append(r"\midrule")
 
-    prev_group = None
-    for row in data_rows:
-        model_name = row[0].strip()
-        current_group = model_group(model_name)
-        if prev_group is not None and current_group != prev_group:
-            lines.append(r"\midrule")
-        prev_group = current_group
+    for row_idx, row in enumerate(data_rows):
+        if row_idx == 0:
+            model_cell = latex_escape(row[0].strip())
+        elif row_idx == 1:
+            model_cell = rf"\multirow{{{len(data_rows) - 1}}}{{*}}{{{latex_escape(row[0].strip())}}}"
+        else:
+            model_cell = ""
 
-        cells = [latex_escape(display_model_name(model_name))]
-        for col in range(1, col_count):
+        cells = [
+            model_cell,
+            row[1].strip(),
+            row[2].strip(),
+        ]
+        for col in range(3, col_count):
             cells.append(format_metric(row[col], best.get(col), bold_best))
         lines.append(" & ".join(cells) + r" \\")
+        if row_idx == 0:
+            lines.append(r"\midrule")
 
-    lines.append(r"\bottomrule")
-    lines.append(r"\end{tabular}%")
-    lines.append(r"}")
-    lines.append(r"\end{table*}")
-    lines.append("")
+    lines.extend([r"\bottomrule", r"\end{tabular}%", r"}"])
     return "\n".join(lines)
 
+
+def latex_task_display_name(task_name):
+    return {"IOL": "Grid-based", "SOI": "Sequence-based"}.get(task_name, task_name)
+
+
+def make_latex_table(rows, task_name, table_kind, bold_best=True):
+    kind_id = table_kind.lower().replace(" ", "_").replace("-", "_")
+    lines = [
+        r"\begin{table}[t]",
+        r"\centering",
+        r"\scriptsize",
+        r"\setlength{\tabcolsep}{1.5pt}",
+        rf"\caption{{{latex_escape(latex_task_display_name(task_name))} 4B DAPO-EM training data source {latex_escape(table_kind)} results.}}",
+        rf"\label{{tab:{task_name.lower()}_4b_dapo_em_data_source_em_f1_{kind_id}}}",
+        make_latex_core(rows, bold_best=bold_best, width=r"\columnwidth"),
+        r"\end{table}",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def make_combined_latex_table(task_rows, bold_best=True):
+    lines = [
+        r"\begin{table*}[t]",
+        r"\centering",
+        r"\scriptsize",
+        r"\setlength{\tabcolsep}{1.5pt}",
+        r"\caption{Grid-based and Sequence-based 4B DAPO-EM training data source scenario-total results.}",
+        r"\label{tab:sys_real_data}",
+    ]
+    for idx, (task_name, rows) in enumerate(task_rows):
+        if idx:
+            lines.append(r"\hfill")
+        panel = chr(ord("a") + idx)
+        lines.extend([
+            r"\begin{minipage}[t]{0.49\textwidth}",
+            r"\centering",
+            rf"\textbf{{({panel}) {latex_escape(latex_task_display_name(task_name))}}}\\[2pt]",
+            make_latex_core(rows, bold_best=bold_best, width=r"\linewidth"),
+            r"\end{minipage}",
+        ])
+    lines.extend([r"\end{table*}", ""])
+    return "\n".join(lines)
 
 def generate(iol_dir, soi_dir, out_dir, latex_dir, bold_best=True):
     out_dir = Path(out_dir)
     latex_dir = Path(latex_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
     latex_dir.mkdir(parents=True, exist_ok=True)
-
     outputs = []
-    latex_outputs = []
+    task_rows = []
+
     for task_name, eval_dir, task in [
         ("IOL", iol_dir, "iol"),
         ("SOI", soi_dir, "soi"),
     ]:
-        rows = build_csv_rows(collect_results(eval_dir, task))
-        csv_path = out_dir / f"{task_name}_merged_em_f1.csv"
+        results = collect_results(eval_dir, task)
+        rows = build_csv_rows(results, SUMMARY_DATASET_COLUMNS, include_dataset_row=False)
+        task_rows.append((task_name, rows))
+
+        csv_path = out_dir / f"{task_name}_4b_dapo_em_data_source_em_f1.csv"
         write_csv(csv_path, rows)
+
         outputs.append(csv_path)
 
-        tex = make_latex_table(
-            rows,
-            task_name,
-            bold_best=bold_best,
-        )
-        tex_path = latex_dir / f"{task_name}_merged_em_f1.tex"
-        tex_path.write_text(tex, encoding="utf-8")
-        outputs.append(tex_path)
-        latex_outputs.append(tex_path)
-
-    combined_path = latex_dir / "IOL_SOI_merged_em_f1_tables.tex"
-    combined_path.write_text("\n".join(path.read_text(encoding="utf-8") for path in latex_outputs), encoding="utf-8")
+    combined_path = latex_dir / "IOL_SOI_4b_dapo_em_data_source_em_f1_tables.tex"
+    combined_path.write_text(make_combined_latex_table(task_rows, bold_best=bold_best), encoding="utf-8")
     outputs.append(combined_path)
     return outputs
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate IOL/SOI merged EM/F1 CSV and LaTeX tables.")
+    parser = argparse.ArgumentParser(description="Generate 4B baseline plus DAPO-EM SYS/REAL/TOTAL data-source EM/F1 CSV and LaTeX tables.")
     parser.add_argument("--iol-dir", default=str(PROJECT_ROOT / "IOL_type" / "eval"))
     parser.add_argument("--soi-dir", default=str(PROJECT_ROOT / "SOI_type" / "eval"))
     parser.add_argument("--out-dir", default=str(ROOT / "merged_reports"))

@@ -14,7 +14,7 @@ source "$SCRIPT_DIR/base_configs.sh"
 
 DATATYPES=("TOTAL")
 MODELTYPES=("4B")
-FUNCTION_TYPES=("EM")
+FUNCTION_TYPES=("F1")
 
 for DATATYPE in "${DATATYPES[@]}"; do
   for MODELTYPE in "${MODELTYPES[@]}"; do
