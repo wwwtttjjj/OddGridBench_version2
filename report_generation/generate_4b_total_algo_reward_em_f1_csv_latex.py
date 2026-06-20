@@ -471,9 +471,9 @@ def generate(iol_dir, soi_dir, out_dir, latex_dir, bold_best=True):
     summary_combined_path.write_text(make_combined_latex_table(summary_task_rows, bold_best=bold_best), encoding="utf-8")
     outputs.append(summary_combined_path)
 
-    detailed_combined_path = latex_dir / "IOL_SOI_4b_total_algo_reward_em_f1_detailed_tables.tex"
-    detailed_combined_path.write_text(make_combined_latex_table(detailed_task_rows, bold_best=bold_best), encoding="utf-8")
-    outputs.append(detailed_combined_path)
+    # detailed_combined_path = latex_dir / "IOL_SOI_4b_total_algo_reward_em_f1_detailed_tables.tex"
+    # detailed_combined_path.write_text(make_combined_latex_table(detailed_task_rows, bold_best=bold_best), encoding="utf-8")
+    # outputs.append(detailed_combined_path)
     return outputs
 
 

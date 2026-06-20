@@ -1,18 +1,11 @@
 #!/usr/bin/env bash
-set -euo pipefail
+# set -euo pipefail
 
-cd "$(dirname "$0")"
+source /nfsdata4/wengtengjin/oddgrid_task/env/msswift_vllm/bin/activate
 
-source /nfsdata4/wengtengjin/oddgrid_task/env/qwen35_vllm/bin/activate
+DATA_TYPES=(VisA BTech MVTEC GOODADS RAD MPDD icon mnist hanzi)
 
-# DATA_TYPES=(VisA BTech MVTEC GOODADS RAD MPDD icon mnist hanzi)
-# DATA_TYPES=(RAD)
-MODELS=(
-  Qwen3.5-2B
-  Qwen3.5-4B
-  Qwen3.5-9B
-  Qwen3.5-27B
-)
+MODELS=(Qwen35_4B_total_em_ms_swift_step_200)
 
 for data_type in "${DATA_TYPES[@]}"; do
   for model in "${MODELS[@]}"; do

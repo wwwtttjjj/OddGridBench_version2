@@ -25,11 +25,12 @@ COMMON_GRPO_ARGS=(
 
     # Batch size / training schedule
     # --num_train_epochs 1
-    --max_steps 100
+    --max_steps 200
     --per_device_train_batch_size 1
     --gradient_accumulation_steps 64
     --dataloader_num_workers 16
     --eval_steps 50
+    --overlong_filter false
 
     # Generation / rollout sampling
     --num_generations 4
@@ -66,7 +67,6 @@ COMMON_GRPO_ARGS=(
     --beta 0.01
     --dynamic_sample true
     --max_resample_times 3
-    --overlong_filter true
 
     # Trainable modules / memory
     --freeze_vit false
@@ -78,7 +78,7 @@ COMMON_GRPO_ARGS=(
     --logging_steps 1
     --log_completions false
     --report_to wandb
-    --save_steps 100
+    --save_steps 200
     --save_total_limit 2
     --num_ppo_epochs 1
     --adam_beta2 0.999

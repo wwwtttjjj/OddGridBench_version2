@@ -21,14 +21,14 @@ def parse_args():
         base_script.base.PROJECT_ROOT
         / "report_generation"
         / "merged_reports"
-        / "fixed_view_qwen_single_metrics_with_4b.csv"
+        / "fixed_view_qwen_acc_pre_rec_f1.csv"
     )
     default_tex = (
         base_script.base.PROJECT_ROOT
         / "report_generation"
         / "merged_reports"
         / "latex_tables"
-        / "fixed_view_qwen_single_metrics_with_4b.tex"
+        / "fixed_view_qwen_acc_pre_rec_f1.tex"
     )
     parser.add_argument("--csv", type=Path, default=default_csv)
     parser.add_argument("--tex", type=Path, default=default_tex)

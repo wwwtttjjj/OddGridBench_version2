@@ -278,6 +278,8 @@ def format_metric(value, best_value=None, bold_best=True):
         formatted = rf"\textbf{{{formatted}}}"
     return formatted
 
+
+
 def make_latex_core(rows, bold_best=True, width=r"\columnwidth"):
     if len(rows) < 3:
         raise ValueError("CSV must contain header rows and at least one data row")
