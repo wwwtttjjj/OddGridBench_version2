@@ -76,7 +76,7 @@ COMMON_GRPO_ARGS=(
 
     # Logging / checkpointing
     --logging_steps 1
-    --log_completions false
+    --log_completions true
     --report_to wandb
     --save_steps 200
     --save_total_limit 2

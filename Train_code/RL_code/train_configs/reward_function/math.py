@@ -117,77 +117,88 @@ def accuracy_oddgrid_reward(gridsize: str, response: str, ground_truth: str, sig
     pred_col = 0 if pred_col is None else pred_col
     return float(score), pred_row, pred_col
 
-# def format_reward(response: str) -> float:
-#     pattern = re.compile(r"<think>.*</think>.*\\boxed\{.*\}.*", re.DOTALL)
-#     format_match = re.fullmatch(pattern, response)
-#     return 1.0 if format_match else 0.0
-
-# def accuracy_reward(response: str, ground_truth: str) -> float:
-#     answer = extract_boxed_content(response)
-#     return 1.0 if grade_answer(answer, ground_truth) else 0.0
 
 def parse_to_set(raw_str):
     """
-    将提取的字符串解析为元素集合。
-    使用正则保护坐标 (1,2) 不被 split(',') 拆散。
+    Parse the boxed answer into a set of coordinates/items.
+    Examples: "(2,2),(3,1)" -> {"(2,2)", "(3,1)"}; "" -> set().
     """
     if not raw_str or raw_str.strip() in ["", "None", "{}"]:
         return set()
-    
-    # 统一英文逗号
-    raw_str = raw_str.replace('，', ',')
-    
-    # 正则逻辑：匹配坐标 (r,c) OR 标签 imageN OR 连续非空非逗号字符
-    pattern = r'(\(\d+,\d+\)|image\d+|[^,\s]+)'
+
+    raw_str = raw_str.replace("，", ",")
+    pattern = r"(\(\d+,\d+\)|image\d+|[^,\s]+)"
     items = re.findall(pattern, raw_str)
-    
     return {item.strip() for item in items if item.strip()}
+
+
+def format_reward(response: str) -> float:
+    pattern = re.compile(r"\\boxed\{.*\}\s*$", re.DOTALL)
+    return 1.0 if pattern.search(response.strip()) else 0.0
+
+
+def parse_prediction_set(prediction_text):
+    """
+    Return (is_valid_final_answer, parsed_set). Invalid format is not the same
+    as a valid empty answer: only \boxed{{}} at the end parses as an empty set.
+    """
+    if format_reward(prediction_text) == 0.0:
+        return False, set()
+
+    pred_content = extract_boxed_content_odd(prediction_text)
+    return True, parse_to_set(pred_content)
+
 
 def accuracy_reward(prediction_text, ground_truth_text):
     """
-    计算 Exact Match (EM): 全对返回 1，否则返回 0
+    Exact match over the predicted answer set.
     """
-    pred_content = extract_boxed_content_odd(prediction_text)
-    # 假设 GT 为直接字符串，不带 \boxed
-    pred_set = parse_to_set(pred_content)
+    valid_pred, pred_set = parse_prediction_set(prediction_text)
+    if not valid_pred:
+        return 0.0
+
     gt_set = parse_to_set(ground_truth_text)
-    
-    return 1 if pred_set == gt_set else 0
+    return 1.0 if pred_set == gt_set else 0.0
+
 
 def f1_reward(prediction_text, ground_truth_text):
     """
-    计算 F1 Score: 衡量预测集合与真值集合的重合度
+    Set F1 over predicted and ground-truth coordinates.
     """
-    pred_content = extract_boxed_content_odd(prediction_text)
-    pred_set = parse_to_set(pred_content)
+    valid_pred, pred_set = parse_prediction_set(prediction_text)
+    if not valid_pred:
+        return 0.0
+
     gt_set = parse_to_set(ground_truth_text)
-    
-    # 两者均为空（预测无异常且实际无异常）
+
     if len(pred_set) == 0 and len(gt_set) == 0:
         return 1.0
-    # 其中一个为空（预测漏报或误报全集）
     if len(pred_set) == 0 or len(gt_set) == 0:
         return 0.0
-    
+
     tp = len(pred_set.intersection(gt_set))
     precision = tp / len(pred_set)
     recall = tp / len(gt_set)
-    
-    if (precision + recall) == 0:
+
+    if precision + recall == 0:
         return 0.0
-    
     return 2 * precision * recall / (precision + recall)
 
-def format_reward(response: str) -> float:
-    # 匹配逻辑：查找是否存在 \boxed{ 后面紧跟任意内容直到遇到第一个 }
-    # \\boxed\{  匹配 \boxed{
-    # .*?        非贪婪匹配，匹配括号内的任何字符
-    # \}         匹配结束的 }
-    pattern = re.compile(r"\\boxed\{.*?\}")
 
-    format_match = re.search(pattern, response)
-    return 1.0 if format_match else 0.0
+def count_reward(prediction_text, ground_truth_text):
+    """
+    Reward matching the number of predicted anomalies.
+    Invalid format receives 0; valid \boxed{{}} can match an empty GT.
+    """
+    valid_pred, pred_set = parse_prediction_set(prediction_text)
+    if not valid_pred:
+        return 0.0
 
+    pred_count = len(pred_set)
+    gt_count = len(parse_to_set(ground_truth_text))
+
+    denom = max(pred_count, gt_count, 1)
+    return max(1.0 - abs(pred_count - gt_count) / denom, 0.0)
 
 def compute_score_EM(reward_inputs: list[dict[str, Any]], format_weight: float = 0.1) -> list[dict[str, float]]:
     if not isinstance(reward_inputs, list):
@@ -229,6 +240,55 @@ def compute_score_F1(reward_inputs: list[dict[str, Any]], format_weight: float =
 
     return scores
 
+
+
+def compute_score_OURS(
+    reward_inputs: list[dict[str, Any]],
+    format_weight: float = 0.10,
+    count_weight: float = 0.20,
+    em_weight: float = 0.30,
+    f1_weight: float = 0.40,
+) -> list[dict[str, float]]:
+    """
+    Composite OddGrid reward for 200-step training.
+    Components: format + count + exact match + set F1.
+    """
+    if not isinstance(reward_inputs, list):
+        raise ValueError("Please use `reward_type=batch` for math reward function.")
+
+    total_weight = format_weight + count_weight + em_weight + f1_weight
+    if total_weight <= 0:
+        raise ValueError("Reward weights must sum to a positive value.")
+
+    scores = []
+    for reward_input in reward_inputs:
+        response = re.sub(r"\s*(<|>|/)\s*", r"\1", reward_input["response"])
+        ground_truth = reward_input["ground_truth"]
+
+        format_score = format_reward(response)
+        count_score = count_reward(response, ground_truth)
+        em_score = accuracy_reward(response, ground_truth)
+        f1_score = f1_reward(response, ground_truth)
+
+        overall = (
+            format_weight * format_score
+            + count_weight * count_score
+            + em_weight * em_score
+            + f1_weight * f1_score
+        ) / total_weight
+
+        scores.append(
+            {
+                "overall": overall,
+                "format": format_score,
+                "count": count_score,
+                "em": em_score,
+                "f1": f1_score,
+                "accuracy": em_score,
+            }
+        )
+
+    return scores
 
 def compute_odd_score(reward_inputs: list[dict[str, Any]], format_weight: float = 0.1) -> list[dict[str, float]]:
     if not isinstance(reward_inputs, list):
